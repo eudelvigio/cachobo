@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/--> 
+    <script th:src="@{/js/messaging.js}" src="/static/js/messaging.js"></script>
+   
+</head>
+<body>
+<div class="container-full">
+    <div class="row">
+	    <div class="col-sm-2">
+	         <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+	    </div>
+	    <div class="col-sm-10">
+		    <h2 th:text="#{messagings.messaging}"></h2>
+                    <form id="formMessagings" class="form-horizontal" th:object="${messaging}" th:action="@{/messaging}" method="post">
+                        <input type="hidden" th:field="*{id}"/>
+		        <input type="hidden" th:field="*{exchangeName}"/>
+		        <div class="form-group">
+                            <label class="col-sm-2 control-label" th:text="#{messaging.messaging_name}"></label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" th:field="*{name}"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" th:text="#{messaging.creation}"></label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" th:field="*{creation}"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" th:text="#{messaging.udpated}"></label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" th:field="*{updated}"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" th:text="#{messaging.messaging_user_list}"></label>
+                            <div class="col-sm-10">
+                                <input type="hidden" th:value="${usercount}" id="numeroelementosenlistadeusuarios" />
+                                <div><input type="button" value="Añadir" onclick="anadeUsuarioALista();" /></div>
+                                <div><input type="button" value="Limpiar" onclick="limpiaLista();" /></div>
+                                <div>Fichero con un usuario por línea: <input type="file" id="fileOfUsers" onchange="anadeUsuariosDesdeFichero(event);" /></div>
+                                <div id="listaUsuarios"><input ondblclick="borraUsuario(event)" type="text" th:each="user, stat : *{users}" th:field="*{users[__${stat.index}__]}" /></div>
+                            </div>
+                        </div>
+
+
+
+                        <div class="row">
+                            <button type="submit" id="submit" class="btn btn-default" th:text="#{global.submit}"></button>
+                        </div>
+                    </form>
+            </div>
+    </div>
+</div>
+</body>
+</html>

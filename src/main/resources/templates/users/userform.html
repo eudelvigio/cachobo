@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+<!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+<script th:inline="javascript">
+     /*<![CDATA[*/
+    $(document).ready(function () {
+        var roles = $("#roles").val();
+        
+        var arroles = roles.split(",");
+        
+        for (var i = 0; i < arroles.length; i++) {
+            $("input[type=checkbox][value='"+arroles[i]+"']").attr("checked", "true");
+        }
+        
+        
+    });
+    /*]]>*/
+</script>
+    </head>
+    <body>
+        <div class="col-sm-2">
+            <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+        </div>
+        <div class="col-sm-10">
+            <h1 >Formulario usuarios</h1>
+            <form th:action="@{/users}" th:object="${user}" method="POST" enctype="utf8">
+                <div>
+                    <label>UserName</label>
+                    <input th:field="*{username}"/>
+                    <input th:field="*{id}" type='hidden'/>
+                </div>
+                <div>
+                    <label>Password (si queda vacía no se cambiará la pass actual)</label>
+                    <input th:field="*{password}" type="password"/>
+                </div>
+                
+                <div>
+                    <label>Roles</label>
+                    <input type="hidden" th:field="*{roles}"/>
+                    <input type="checkbox" onclick="if (document.getElementById('roles').value.indexOf(',') > -1) {if (this.checked) {document.getElementById('roles').value += ',' + this.value} else {document.getElementById('roles').value = document.getElementById('roles').value.replace(',' + this.value, '');}} else {if (this.checked) {if (document.getElementById('roles').value=='') {document.getElementById('roles').value += this.value} else {document.getElementById('roles').value += ',' + this.value}} else {document.getElementById('roles').value = document.getElementById('roles').value.replace(this.value, '');}}" th:each='rol : ${existingRoles}' th:value='${rol.id}' th:text='${rol.role}' />
+                </div>
+                
+                <button type="submit" >Guardar</button>
+            </form>
+        </div>
+
+    </body>
+</html>

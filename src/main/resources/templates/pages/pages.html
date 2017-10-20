@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+</head>
+<body>
+<div class="container-full">
+	<div class="row">
+	    <div class="col-sm-2">
+	         <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+	    </div>
+	    <div class="col-sm-10">
+		<span class="new" sec:authorize="hasAnyAuthority('SUPERADMIN', 'SITE_ADMIN')"><a href="#" th:href="@{'/page/new'}" th:text="#{global.new}"></a></span>
+		        <div class="table-container" th:if="${not #lists.isEmpty(pages)}">
+		        <h2><p th:text="#{pages.page_list}"></p></h2>
+		        <table class="table table-striped">
+		            <tr>
+		                <th><p th:text="#{global.id}"></p></th>
+		                <th><p th:text="#{pages.page_name}"></p></th>
+		                <th><p th:text="#{pages.page_version}"></p></th>
+		                <th><p th:text="#{pages.page_route}"></p></th>
+		                <th sec:authorize="hasAuthority('SUPERADMIN')" ><p th:text="#{pages.page_site}"></p></th>
+		                <th><p th:text="#{global.view}">View</p></th>
+		                <th><p th:text="#{global.edit}">Edit</p></th>
+		            </tr>
+		            <tr th:each="page : ${pages}">
+		                <td th:text="${page.id}"><a href="/page/${page.id}"></a></td>
+		                <td th:text="${page.name}"></td>
+		                <td th:text="${page.version}"></td>
+		                <td th:text="${page.route}"></td>
+                                <td sec:authorize="hasAuthority('SUPERADMIN')" th:text='${page.site?.name}'></td>
+		                <td><a th:href="@{/page/{id}(id=${page.id})}" th:text="#{global.view}">View</a></td>
+		                <td><a th:href="@{/page/edit/{id}(id=${page.id})}" th:text="#{global.edit}">Edit</a></td>
+		            </tr>
+		        </table>
+		
+		    </div>
+	    </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+        <script th:src="@{/js/gridmanager.js}" src="/static/js/gridmanager.js"></script>
+        <script th:src="@{/js/common.js}" src="/static/js/common.js"></script>
+        <script th:src="@{/js/media.js}" src="/static/js/media.js"></script>
+        <script th:src="@{/js/tag-it.min.js}" src="/static/js/tag-it.min.js"></script>
+
+<script src="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/lib/codemirror.js" 
+    		th:src="@{/webjars/codemirror/5.23.0-1/lib/codemirror.js}"></script>
+    <script src="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/mode/css/css.js" 
+    		th:src="@{/webjars/codemirror/5.23.0-1/mode/css/css.js}"></script>
+    <script src="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/mode/xml/xml.js" 
+    		th:src="@{/webjars/codemirror/5.23.0-1/mode/xml/xml.js}"></script>
+    <script src="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/mode/javascript/javascript.js" 
+    		th:src="@{/webjars/codemirror/5.23.0-1/mode/css/css.js}"></script>
+                
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.6.3/tinymce.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.6.3/tinymce.jquery.min.js"></script>
+
+        <link href="../static/css/gridmanager.css"
+              th:href="@{/css/gridmanager.css}" rel="stylesheet" media="screen"/>
+        <link href="../static/css/jquery.tagit.css"
+              th:href="@{/css/jquery.tagit.css}" rel="stylesheet" media="screen"/>
+        <link href="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/lib/codemirror.css"
+          th:href="@{/webjars/codemirror/5.23.0-1/lib/codemirror.css}" rel="stylesheet" media="screen"/>
+    
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            window.revisions = /*[[${revisions}]]*/[];
+            /*]]>*/
+        </script>
+    </head>
+    <body>
+        <div class="container-full">
+            <div class="row">
+                <div class="col-sm-2">
+                    <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+                </div>
+                <div class="col-sm-10">
+                    <input id='goToPrevRev' onclick='goToPrevRev()' type='button' value='Ir a anterior revisión' style='float: left;' />
+                    <input id='goToNextRev' onclick='goToNextRev()' type='button' value='Ir a siguiente revisión' style='float: right;' />
+                    <h2 th:text="#{medias.media}"></h2>
+                    <div>
+                        <form id="formMedia" class="form-horizontal" th:object="${media}" th:action="@{/medias}" method="post">
+                            <input type="hidden" class="currentIdMedia" th:field="*{id}"/>
+                            <input type="hidden" th:field="*{version}"/>
+                            <input type="hidden" class="fkIdsite" th:field="*{site}" th:value='${media.site}' />
+                            <input type="hidden" class="fkIdElementMetaData" th:field="*{emd}" th:value='${media.emd}' />
+                            <input type="hidden" class="currentFileManagerRoute" th:field="*{fileManagerRoute}"/>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label" th:text="#{medias.media_name}"></label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" th:field="*{name}"/>
+                                </div>
+                            </div>
+                           
+                            <div class="form-group" sec:authorize="hasAnyAuthority('SUPERADMIN', 'SITE_ADMIN')">
+                                <label class="col-sm-2 control-label" th:text="#{medias.media_definition_json}"></label>
+                                <div class="col-sm-10">
+                                    <textarea th:field="*{definitionJson}"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group" style="display:none;" sec:authorize="!hasAnyAuthority('SUPERADMIN', 'SITE_ADMIN')">
+                                <label class="col-sm-2 control-label" th:text="#{medias.media_definition_json}"></label>
+                                <div class="col-sm-10">
+                                    <input type="hidden" class="form-control" th:field="*{definitionJson}"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label" th:text="#{medias.media_creation}"></label>
+                                <div class="col-sm-10">
+                                    <input type="datetime-local" class="form-control" th:field="*{creation}"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label" th:text="#{medias.media_deletion}"></label>
+                                <div class="col-sm-10">
+                                    <input type="datetime-local" class="form-control" th:field="*{deleted}"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group" sec:authorize="hasAnyAuthority('SUPERADMIN', 'SITE_ADMIN')">
+                                <label class="col-sm-2 control-label" th:text="#{medias.medias_serve_to_site}"></label>
+                                <div class="col-sm-10">
+                                    <b>Sitios</b>
+                                    <div th:if='${not #lists.isEmpty(media.sitesOfMedia)}' th:each="site : ${media.sitesOfMedia}"><span th:text="${site.name}"></span><span style="cursor: pointer; color: red;" th:attr="site-id=${site.id}" onclick="deleteServeSite(this)">X</span></div>
+                                    
+                                    <button class="btn btn-default" type="button" th:text="#{medias.add_serve_to_site}" onclick="addServeSite()"></button>
+                                    
+                                    <select id="selectSites" style="display:none;">
+                                        <option th:each="site : ${sites}" th:value="${site.id}" th:text="${site.name}"></option>
+                                    </select>
+                                    <button class="btn btn-default" type="button" th:text="#{medias.confirm_add_serve_to_site}" id="btnConfirmServeSite" style="display:none" onclick="confirmServeSite()"></button>
+                                    <button class="btn btn-default" type="button" th:text="#{medias.cancel_add_serve_to_site}" id="btnCancelServeSite" style="display:none" onclick="cancelServeSite()"></button>
+                                    
+                                    
+                                    <input type="hidden" th:value="${site.id}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].id}" />
+                                    <input type="hidden" th:value="${site.name}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].name}" />
+                                    <input type="hidden" th:value="${site.domain}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].domain}" />
+                                    <input type="hidden" th:value="${site.global_css}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].global_css}" />
+                                    <input type="hidden" th:value="${site.has_footer}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].has_footer}" />
+                                    <input type="hidden" th:value="${site.has_header}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].has_header}" />
+                                    <input type="hidden" th:value="${site.creation}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].creation}" />
+                                    <input type="hidden" th:value="${site.version}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].version}" />
+                                </div>
+                            </div>
+                            <div class="form-group" style="display:none;" sec:authorize="!hasAnyAuthority('SUPERADMIN', 'SITE_ADMIN')">
+                                <label class="col-sm-2 control-label" th:text="#{medias.medias_serve_to_site}"></label>
+                                <div class="col-sm-10">
+                                    <b>Sitios</b>
+                                    <div th:if='${not #lists.isEmpty(media.sitesOfMedia)}' th:each="site : ${media.sitesOfMedia}"><span th:text="${site.name}"></span><span style="cursor: pointer; color: red;" th:attr="site-id=${site.id}" onclick="deleteServeSite(this)">X</span></div>
+                                    
+                                    <button class="btn btn-default" type="button" th:text="#{medias.add_serve_to_site}" onclick="addServeSite()"></button>
+                                    
+                                    <select id="selectSites" style="display:none;">
+                                        <option th:each="site : ${sites}" th:value="${site.id}" th:text="${site.name}"></option>
+                                    </select>
+                                    <button class="btn btn-default" type="button" th:text="#{medias.confirm_add_serve_to_site}" id="btnConfirmServeSite" style="display:none" onclick="confirmServeSite()"></button>
+                                    <button class="btn btn-default" type="button" th:text="#{medias.cancel_add_serve_to_site}" id="btnCancelServeSite" style="display:none" onclick="cancelServeSite()"></button>
+                                    
+                                    
+                                    <input type="hidden" th:value="${site.id}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].id}" />
+                                    <input type="hidden" th:value="${site.name}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].name}" />
+                                    <input type="hidden" th:value="${site.domain}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].domain}" />
+                                    <input type="hidden" th:value="${site.global_css}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].global_css}" />
+                                    <input type="hidden" th:value="${site.has_footer}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].has_footer}" />
+                                    <input type="hidden" th:value="${site.has_header}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].has_header}" />
+                                    <input type="hidden" th:value="${site.creation}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].creation}" />
+                                    <input type="hidden" th:value="${site.version}" th:each="site, iterationStatus : ${media.sitesOfMedia}" th:field="*{sitesOfMedia[__${iterationStatus.index}__].version}" />
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label" th:text="#{medias.media_xtra_data}"></label>
+                                <div class="col-sm-10">
+                                    <button class="btn btn-default" type="button" onclick="openConfiguratorMedia()" th:text="#{medias.edit_media_xtra}"></button>
+                                </div>
+                                
+                            </div>
+
+                            <div class="form-group" style="display: none;">
+                                <label class="col-sm-2 control-label" th:text="#{medias.media_xtra_data}"></label>
+                                <div class="col-sm-10">
+                                    <div class="media-xtra-container" th:if="${not #lists.isEmpty(media.mediaXtra)}" th:each="mx,iterationStatus : ${media.mediaXtra}">
+                                        <input type="hidden" data-field="xtraType" th:field="*{mediaXtra[__${iterationStatus.index}__].xtraType}" />
+                                        <input type="hidden" data-field="id" th:field="*{mediaXtra[__${iterationStatus.index}__].id}" />
+                                        <input type="hidden" data-field="isDefaultXtraData" th:field="*{mediaXtra[__${iterationStatus.index}__].isDefaultXtraData}" />
+                                        <input type="hidden" data-field="version" th:field="*{mediaXtra[__${iterationStatus.index}__].version}" />
+                                        <input type="hidden" data-field="media" th:field="*{mediaXtra[__${iterationStatus.index}__].media}" />
+                                        <input type="hidden" data-field="xtraKey" readonly="" th:field="*{mediaXtra[__${iterationStatus.index}__].xtraKey}" />
+                                        <input type="hidden" data-field="xtraDescription" th:field="*{mediaXtra[__${iterationStatus.index}__].xtraDescription}" />
+                                        <label th:text="${mx.xtraDescription}"></label>
+                                        <!--si es texto metemos un text-->
+                                        <input type="text" data-field="xtraValue" th:if="${#strings.equals(mx.xtraType, 'STRING')}" th:field="*{mediaXtra[__${iterationStatus.index}__].xtraValue}" />
+                                        <!--si es date metemos un date-->
+                                        <input type="datetime-local" data-field="xtraValue" th:if="${#strings.equals(mx.xtraType, 'DATETIME') or #strings.equals(mx.xtraType, 'PUBLICATION_DATE') or #strings.equals(mx.xtraType, 'EXPIRATION_DATE') or #strings.equals(mx.xtraType, 'DELETION_DATE') }" th:field="*{mediaXtra[__${iterationStatus.index}__].xtraValue}" />
+                                        <!--si es imagen metemos un hidden, que ya se verá en la imagen-->
+                                        <input type="hidden" data-field="xtraValue" th:if="${#strings.equals(mx.xtraType, 'IMAGE') or #strings.equals(mx.xtraType, 'CSS') or #strings.equals(mx.xtraType, 'JS')}" th:field="*{mediaXtra[__${iterationStatus.index}__].xtraValue}" />
+                                        <!--si es integer creamos un input numérico-->
+                                        <input type="number" data-field="xtraValue" th:if="${#strings.equals(mx.xtraType, 'INTEGER')}" th:field="*{mediaXtra[__${iterationStatus.index}__].xtraValue}" />
+                                        <!--si no es ná de lo anterior, metemos un text-->
+                                        <input type="text" data-field="xtraValue" th:if="${not #strings.equals(mx.xtraType, 'STRING') and not #strings.equals(mx.xtraType, 'INTEGER') and not #strings.equals(mx.xtraType, 'JS') and not #strings.equals(mx.xtraType, 'CSS') and not #strings.equals(mx.xtraType, 'IMAGE') and not #strings.equals(mx.xtraType, 'DATETIME') and not #strings.equals(mx.xtraType, 'PUBLICATION_DATE') and not #strings.equals(mx.xtraType, 'EXPIRATION_DATE') and not #strings.equals(mx.xtraType, 'DELETION_DATE')}" th:field="*{mediaXtra[__${iterationStatus.index}__].xtraValue}" />
+
+
+
+                                        <!--<input type="text" th:field="*{mediaXtra[__${iterationStatus.index}__].xtraValue}" />-->
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group" id='tabs-elements'>
+                                <h2 th:text="#{medias.media_selector}"></h2>
+                                <div id='tabs-add-and-remove'>
+                                    <input type="button" class="add-and-remove-btn btn btn-default" th:value="#{medias.add_element}" onclick="addElement()" />
+                                    <div class="col-sm-12" id="mediaContainer">
+                                        <input type="hidden" th:if="${not #lists.isEmpty(media.mediaData)}" id="nextIOfMediaDatas" th:value="${#lists.size(media.mediaData)}" />
+                                        <input type="hidden" th:if="${#lists.isEmpty(media.mediaData)}" id="nextIOfMediaDatas" value="0" />
+                                        <div style="position: relative;" class="element-media-container" th:id="${'element-media-container' + iterationStatus.index}"  onclick="showConfiguratorMediadata(this)" th:classappend='${mediaData.isDefaultMediaData} ? defaultMediaData' th:if="${not #lists.isEmpty(media.mediaData)}" th:each="mediaData,iterationStatus : ${media.mediaData}" >
+                                            <div style="border: 1px solid #ccc; cursor: move; height: 20px; width: 20px; position: absolute; top: 10px; left: 10px; background-image: url(/wanaba/images/move.png); background-size: cover;" class="handle"></div>
+                                            <div class="mini-element">
+                                                <input type="hidden" th:value="${mediaData.id}" />
+                                                <h1 style="font-size: 14px; padding-top: 10px;" th:text="${'Elemento nº' + iterationStatus.index}">Elemento ["+iNum+"]</h1>
+                                            </div>
+
+                                            <div class="element-data">
+                                                <table style="width: 100%;">
+                                                    <tr style="display: none;">
+                                                        <td>
+                                                            <label for="mediaData__${iterationStatus.index}__.created" th:text="#{medias.mediadata_created}"></label>
+                                                        </td>
+                                                        <td>
+                                                            <input type="hidden" class="id" th:field="*{mediaData[__${iterationStatus.index}__].id}" th:value="${mediaData.id}" />
+                                                            <input type="hidden" class="orderOfMediaData" th:field="*{mediaData[__${iterationStatus.index}__].orderOfMediaData}" th:value="${mediaData.orderOfMediaData}" />
+                                                            <input type="hidden" class="version" th:field="*{mediaData[__${iterationStatus.index}__].version}" th:value="${mediaData.version}" />
+                                                            <input type="hidden" class="isDefaultMediaData" th:field="*{mediaData[__${iterationStatus.index}__].isDefaultMediaData}" th:value="${mediaData.isDefaultMediaData}" />
+                                                            <input type="datetime-local" class="created" th:field="*{mediaData[__${iterationStatus.index}__].created}" th:value="${mediaData.created}" />
+
+                                                        </td>
+                                                    </tr>
+                                                    <tr style="display: none;">
+                                                        <td>
+                                                            <label for="mediaData__${iterationStatus.index}__.publication" th:text="#{medias.mediadata_publication}"></label>
+                                                        </td>
+                                                        <td>
+                                                            <input type="datetime-local" class="publication" th:field="*{mediaData[__${iterationStatus.index}__].publication}" th:value="${mediaData.publication}" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr style="display: none;">
+                                                        <td>
+                                                            <label for="mediaData__${iterationStatus.index}__.expiration" th:text="#{medias.mediadata_expiration}"></label>
+                                                        </td>
+                                                        <td>
+                                                            <input type="datetime-local" class="expiration" th:field="*{mediaData[__${iterationStatus.index}__].expiration}" th:value="${mediaData.expiration}" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr style="display: none;">
+                                                        <td>
+                                                            <label for="mediaData__${iterationStatus.index}__.deletion" th:text="#{medias.mediadata_deletion}"></label>
+                                                        </td>
+                                                        <td>
+                                                            <input type="datetime-local" class="deletion" th:field="*{mediaData[__${iterationStatus.index}__].deletion}" th:value="${mediaData.deletion}" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr style="display: none;">
+                                                        <td>
+                                                            <label for="mediaData__${iterationStatus.index}__.objValue" th:text="#{medias.mediadata_value}"></label>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="objValue" th:field="*{mediaData[__${iterationStatus.index}__].objValue}" th:value="${mediaData.objValue}" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr style="display: none;">
+                                                        <td>
+                                                            <label for="mediaData__${iterationStatus.index}__.objAction" th:text="#{medias.mediadata_action}"></label>
+                                                        </td>
+                                                        <td>
+                                                            <input type="hidden" class="media" th:name="mediaData[__${iterationStatus.index}__].media" th:id="mediaData__${iterationStatus.index}__.media"  th:value="${media.id}" />
+                                                            <input type="text" class="objAction" th:field="*{mediaData[__${iterationStatus.index}__].objAction}" th:value="${mediaData.objAction}" />
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="2">
+                                                            <input type="hidden" class="nextIOfXtraMetadata" th:if="${not #lists.isEmpty(mediaData.mediaDataXtra)}" th:id="|nextIOfMediaDatasXtra_${mediaData.id}|" th:attr="mediadataindex=${iterationStatus.index}" th:value="${#lists.size(mediaData.mediaDataXtra)}" />
+                                                            <input type="hidden" class="nextIOfXtraMetadata" th:if="${#lists.isEmpty(mediaData.mediaDataXtra)}" th:id="|nextIOfMediaDatasXtra_${mediaData.id}|" th:attr="mediadataindex=${iterationStatus.index}" value="0" />
+
+
+                                                            <div th:id="|containerOfContainerXtraMetaDatas_${iterationStatus.index}|" class="containerXtraMetaDatas">
+                                                                <div th:id="|containerDefaultXtraMetaDatas_${mediaData.id}|" class="container-default-xtramediadata" th:if="${xtraData.isDefaultXtraData}" th:each="xtraData, iterXtraDataStatus : *{mediaData[__${iterationStatus.index}__].mediaDataXtra}">
+                                                                    <input type="hidden" data-field="xtraType" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].xtraType}" />
+                                                                    <input type="hidden" data-field="id" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].id}" />
+                                                                    <input type="hidden" data-field="version" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].version}" />
+                                                                    <input type="hidden" data-field="isDefaultXtraData" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].isDefaultXtraData}" />
+                                                                    <input type="hidden" readonly='' data-field="xtraKey" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].xtraKey}" />
+                                                                    <input type="hidden" readonly='' data-field="xtraDescription" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].xtraDescription}" />
+                                                                    <label th:text="${xtraData.xtraDescription}"></label>
+                                                                    <input type="text" data-field="xtraValue" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].xtraValue}" /> 
+                                                                    <input type="hidden" data-field="mediaData" th:id="|mediaData${iterationStatus.index}.mediaDataXtra${iterXtraDataStatus.index}.mediaData|"  th:name="|mediaData[${iterationStatus.index}].mediaDataXtra[${iterXtraDataStatus.index}].mediaData|" th:value="${mediaData.id}" />
+
+                                                                </div>
+                                                                <div th:id="|containerXtraMetaDatas_${mediaData.id}|"  class="containerXtraMetaDatas" th:unless="${xtraData.isDefaultXtraData}" th:each="xtraData, iterXtraDataStatus : *{mediaData[__${iterationStatus.index}__].mediaDataXtra}">
+                                                                    <input type="hidden" data-field="xtraType" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].xtraType}" />
+                                                                    <input type="hidden" data-field="id" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].id}" />
+                                                                    <input type="hidden" data-field="version" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].version}" />
+                                                                    <input type="hidden" data-field="isDefaultXtraData" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].isDefaultXtraData}" />
+                                                                    <input type="hidden" readonly='' data-field="xtraDescription" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].xtraDescription}" />
+                                                                    <label th:text="${xtraData.xtraDescription}"></label>
+                                                                    <input type="hidden" readonly='' data-field="xtraKey" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].xtraKey}" />
+                                                                    <!--si es texto metemos un text-->
+                                                                    <input type="text" data-field="xtraValue" th:if="${#strings.equals(xtraData.xtraType, 'STRING')}" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].xtraValue}" />
+                                                                    <!--si es date metemos un date-->
+                                                                    <input type="datetime-local" data-field="xtraValue" th:if="${#strings.equals(xtraData.xtraType, 'DATETIME') or #strings.equals(xtraData.xtraType, 'PUBLICATION_DATE') or #strings.equals(xtraData.xtraType, 'EXPIRATION_DATE') or #strings.equals(xtraData.xtraType, 'DELETION_DATE') }" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].xtraValue}" />
+                                                                    <!--si es imagen O CSS O JS metemos un hidden, que ya se verá en la imagen o el textarea-->
+                                                                    <input type="hidden" data-field="xtraValue" th:if="${#strings.equals(xtraData.xtraType, 'IMAGE') or #strings.equals(xtraData.xtraType, 'JS') or #strings.equals(xtraData.xtraType, 'CSS')}" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].xtraValue}" />
+                                                                    <!--si es integer creamos un input numérico-->
+                                                                    <input type="number" data-field="xtraValue" th:if="${#strings.equals(xtraData.xtraType, 'INTEGER')}" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].xtraValue}" />
+                                                                    <!--si no es ná de lo anterior, metemos un text-->
+                                                                    <input type="text" data-field="xtraValue" th:if="${not #strings.equals(xtraData.xtraType, 'STRING') and not #strings.equals(xtraData.xtraType, 'JS') and not #strings.equals(xtraData.xtraType, 'CSS') and not #strings.equals(xtraData.xtraType, 'INTEGER') and not #strings.equals(xtraData.xtraType, 'IMAGE') and not #strings.equals(xtraData.xtraType, 'DATETIME') and not #strings.equals(xtraData.xtraType, 'PUBLICATION_DATE') and not #strings.equals(xtraData.xtraType, 'EXPIRATION_DATE') and not #strings.equals(xtraData.xtraType, 'DELETION_DATE')}" th:field="*{mediaData[__${iterationStatus.index}__].mediaDataXtra[__${iterXtraDataStatus.index}__].xtraValue}" />
+
+                                                                    <input type="hidden" data-field="mediaData" th:id="|mediaData${iterationStatus.index}.mediaDataXtra${iterXtraDataStatus.index}.mediaData|"  th:name="|mediaData[${iterationStatus.index}].mediaDataXtra[${iterXtraDataStatus.index}].mediaData|" th:value="${mediaData.id}" />
+
+
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>  
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4" style="border: 1px solid #ccc; padding: 10px;">
+                                    <h3>Aún no publicados (<span id="not-yet-published-counter"></span>) <input type="button" data-toggle="popover" title="Aún no publicados" data-content="Elementos con fecha de publicación superior a la actual. El elemento se mostrará una vez superada la fecha." value="?" /></h3>
+                                    <button class="btn btn-default" onclick="document.querySelector('#mediaContainerNotYetPublished').classList.toggle('hidden')" type="button">Mostrar no publicados aún</button>
+                                    <div class="col-sm-12 hidden" id="mediaContainerNotYetPublished" style="min-height: 300px;" ></div>
+                                </div>
+                                <div class="col-sm-4" style="border: 1px solid #ccc; padding: 10px;">
+                                    <h3>Expirados (<span id="expired-counter"></span>) <input type="button" data-toggle="popover" title="Expirados" data-content="Elementos con fecha de expiración anterior a la actual. Normalmente, barrita de finalizado" value="?" /></h3>
+                                    <button class="btn btn-default" onclick="document.querySelector('#mediaContainerExpired').classList.toggle('hidden')" type="button">Mostrar expirados</button>
+                                    <div class="col-sm-12 hidden" id="mediaContainerExpired" style="min-height: 300px;" ></div>
+                                </div>
+                                <div class="col-sm-4" style="border: 1px solid #ccc; padding: 10px;">
+                                    <h3>Despublicados (<span id="deleted-counter"></span>) <input type="button" data-toggle="popover" title="Aún no publicados" data-content="Elementos con fecha de despublicación (eliminación) anterior a la actual. El elemento no se mostrará más" value="?" /></h3>
+                                    <button class="btn btn-default" onclick="document.querySelector('#mediaContainerDeleted').classList.toggle('hidden')" type="button">Mostrar borrados</button>
+                                    <div class="col-sm-12 hidden" id="mediaContainerDeleted" style="min-height: 300px;"></div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <button type="submit" id="submit" class="btn btn-default" th:text="#{global.submit}"></button>
+                                <button type="button" id="btnCompile" class="btn btn-default" th:text="#{global.compile}"></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>

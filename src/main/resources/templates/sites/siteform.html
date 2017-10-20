@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+    <script src="http://cdn.jsdelivr.net/webjars/ckeditor/4.5.11/full/ckeditor.js" 
+    		th:src="@{/webjars/ckeditor/4.5.11/full/ckeditor.js}"></script>
+    <script src="http://cdn.jsdelivr.net/webjars/ckeditor/4.5.11/adapters/jquery.js" 
+    		th:src="@{/webjars/ckeditor/4.5.11/full/adapters/jquery.js}"></script>
+    <script src="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/lib/codemirror.js" 
+    		th:src="@{/webjars/codemirror/5.23.0-1/lib/codemirror.js}"></script>
+    <script src="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/mode/css/css.js" 
+    		th:src="@{/webjars/codemirror/5.23.0-1/mode/css/css.js}"></script>
+    <script src="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/mode/xml/xml.js" 
+    		th:src="@{/webjars/codemirror/5.23.0-1/mode/xml/xml.js}"></script>
+    <script th:src="@{/js/gridmanager.js}" src="/static/js/gridmanager.js"></script>
+    <script th:src="@{/js/site.js}" src="/static/js/site.js"></script>
+    <script th:src="@{/js/common.js}" src="/static/js/common.js"></script>
+    
+    <link href="../static/css/gridmanager.css"
+          th:href="@{/css/gridmanager.css}" rel="stylesheet" media="screen"/>
+    <link href="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/lib/codemirror.css"
+          th:href="@{/webjars/codemirror/5.23.0-1/lib/codemirror.css}" rel="stylesheet" media="screen"/>
+    <script th:inline="javascript">
+/*<![CDATA[*/
+    
+    window.revisions = /*[[${revisions}]]*/[];
+    
+/*]]>*/
+    </script>
+</head>
+<body>
+<div class="container-full">
+    <div class="row">
+	    <div class="col-sm-2">
+	         <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+	    </div>
+	    <div class="col-sm-10">
+		    <input id='goToPrevRev' onclick='goToPrevRev()' type='button' value='Ir a anterior revisión' style='float: left;' />
+                    <input id='goToNextRev' onclick='goToNextRev()' type='button' value='Ir a siguiente revisión' style='float: right;' />
+                    <h2 th:text="#{sites.site}"></h2>
+		    <div>
+		        <form id="formSite" class="form-horizontal" th:object="${site}" th:action="@{/site}" method="post">
+		            <input id="currentIdSite" type="hidden" th:field="*{id}"/>
+		            <input type="hidden" th:field="*{version}"/>
+		            <div id="metadatas-container">
+                                <input type="hidden" th:if="${not #lists.isEmpty(site.siteMetadatas)}" id="nextIOfMetaDatas" th:value="${#lists.size(site.siteMetadatas)}" />
+                                <input type="hidden" th:if="${#lists.isEmpty(site.siteMetadatas)}" id="nextIOfMetaDatas" value="0" />
+                                <ul id="listSiteMetadatas">
+                                    <li th:if="${not #lists.isEmpty(site.siteMetadatas)}" th:each="siteMetadata,iterationStatus : ${site.siteMetadatas}">
+		            		<p onclick="eliminame(this)" style="color:red; cursor: pointer;">X</p>
+                                        <input type="hidden" th:field='*{siteMetadatas[__${iterationStatus.index}__].id}' />
+		            		<input type="hidden" th:field='*{siteMetadatas[__${iterationStatus.index}__].version}' />
+		            		<input type="hidden" th:field='*{siteMetadatas[__${iterationStatus.index}__].where}' />
+		            		<input type="hidden" th:field='*{siteMetadatas[__${iterationStatus.index}__].value}' />
+		            		<input type="hidden" th:field='*{siteMetadatas[__${iterationStatus.index}__].order}' />
+		            		<input type="hidden" th:field='*{siteMetadatas[__${iterationStatus.index}__].site}' />
+		            		<input type="hidden" th:field='*{siteMetadatas[__${iterationStatus.index}__].elementMetadata}' />
+		            		<input type="hidden" th:field='*{siteMetadatas[__${iterationStatus.index}__].key}' />
+		            		<input type="hidden" th:field='*{siteMetadatas[__${iterationStatus.index}__].script}' />
+                                        <p th:if='${siteMetadata.elementMetadata?.element?.name != null}' th:text="${siteMetadata.elementMetadata?.element?.name}"></p>
+                                        <p th:if='${siteMetadata.elementMetadata?.key != null}' th:text="${siteMetadata.elementMetadata?.key}"></p>
+                                        <p th:if='${siteMetadata.elementMetadata?.where != null}' th:text="${siteMetadata.elementMetadata?.where}"></p>
+                                        <p th:if='${siteMetadata.key != null}' th:text="${siteMetadata.key}"></p>
+                                        <p th:if='${siteMetadata.where != null}' th:text="${siteMetadata.where}"></p>
+                                        <p th:if='${siteMetadata.value != null}' th:text="${siteMetadata.value}"></p>
+                                        
+                                    </li>
+		            	</ul>
+		            </div>
+		            <div class="form-group">
+		                <label class="col-sm-2 control-label" th:text="#{sites.site_name}"></label>
+		                <div class="col-sm-10">
+		                    <input type="text" class="form-control" th:field="*{name}"/>
+		                </div>
+		            </div>
+		            <div class="form-group">
+		                <label class="col-sm-2 control-label" th:text="#{sites.site_domain}"></label>
+		                <div class="col-sm-10">
+		                    <input type="text" class="form-control" th:field="*{domain}"/>
+		                </div>
+		            </div>
+		            
+		            <!--<div class="form-group">
+		            	<label class="col-sm-2 control-label" th:text="#{sites.site_has_header}"></label>
+		            	<div class="col-sm-10">
+		                    <input type="checkbox" id="has-header-check" class="form-control" th:field="*{has_header}" onchange="hasHeaderChange()"/>
+		                </div>
+		            </div>-->
+		            
+		            
+		            <div class="form-group" id="header-layouter-container">
+		            	<label class="col-sm-2 control-label" th:text="#{sites.site_header}"></label>
+		            	<div class="col-sm-10">
+                                    <textarea class="form-control" id="html-header"></textarea>
+                                    <input type="button" th:value="#{sites.config_element}" onclick="showElementator('header')" value="launch" />
+		                    <input type="button" th:value="#{sites.insert_image_or_element}" onclick="showFM('header')" value="launch" />
+		                    <!-- <div class="layouter" id="layouter-header"></div> -->
+		                </div>
+		            </div>
+		            
+		            <!--<div class="form-group">
+		            	<label class="col-sm-2 control-label" th:text="#{sites.site_has_footer}"></label>
+		            	<div class="col-sm-10">
+		                    <input type="checkbox" id="has-footer-check" class="form-control" th:field="*{has_footer}" onchange="hasFooterChange()"/>
+		                </div>
+		            </div>-->
+		            
+		            
+		            <div class="form-group" id="footer-layouter-container" >
+		            	<label class="col-sm-2 control-label" th:text="#{sites.site_footer}"></label>
+		            	<div class="col-sm-10">
+                                    <textarea class="form-control" id="html-footer"></textarea>
+		                    <input type="button" th:value="#{sites.config_element}" onclick="showElementator('footer')" value="launch" />
+		                    <input type="button" th:value="#{sites.insert_image_or_element}" onclick="showFM('footer')" value="launch" />
+		                </div>
+		            </div>
+		            
+		            
+		            <div class="form-group">
+		            	<label class="col-sm-2 control-label" th:text="#{sites.global_css}"></label>
+		            	<div class="col-sm-10 css-code-container">
+                                    <textarea class="form-control" id="css"></textarea>
+		                </div>
+		            </div>
+                            
+		            
+		            <div class="row">
+		                <button type="submit" id="submit" class="btn btn-default" th:text="#{global.submit}"></button>
+                                <button type="button" id="publish" class="btn btn-default" th:text="#{global.publish}"></button>
+                                <button type="button" id="show" class="btn btn-default" th:text="#{global.show_html}"></button>
+                                Revisión publicada [<span th:text="${publishedSite?.revisionNumber}"></span>]
+		            </div>
+		        </form>
+		    </div>
+		</div>
+    </div>
+</div>
+<div id='selectElements' th:title="#{pages.page_controlselector}" title="Custom Control Selector">
+	<div class="elements-container" th:if="${not #lists.isEmpty(elements)}">
+		<div class="element" th:onclick="'selectElement('+${element.id}+', \''+${element.name}+'\')'" th:attr='element-id=${element.id}' th:each="element : ${elements}">
+                    <span th:text="${element.name}"></span>
+                    <span class='elementMetadata' th:each='metaData : ${element.metaDatas}'>
+                        <input type='hidden' th:value='${metaData.id}' class='id' />
+                        <input type='hidden' th:value='${metaData.key}' class='key' />
+                        <input type='hidden' th:value='${metaData.scope}' class='scope' />
+                        <input type='hidden' th:value='${metaData.storage}' class='storage' />
+                        <input type='hidden' th:value='${metaData.where}' class='where' />
+                        <input type='hidden' th:value='${metaData.value}' class='value' />
+                        <input type='hidden' th:value='${metaData.script?.id}' class='script' />
+                    </span>
+                    
+		</div>
+	</div>
+	<div id="element-configurator"></div>
+</div>
+
+<div id="layouter-modal" th:title="#{sites.layouter}" title="Layoutizador">
+	<input type="hidden" id="whereAmI" />
+	<div class="layouter" id="layouter"></div>
+	
+</div>
+
+</body>
+</html>

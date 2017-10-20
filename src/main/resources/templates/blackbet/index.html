@@ -1,0 +1,253 @@
+<html th:attr='ng-app=${title + "_APP"}'>
+<head>
+    <title th:text="${title + rev}"></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        this.baseUrl = /*[[${baseUrl}]]*/"";
+        this.boBaseUrl = /*[[${boBaseUrl}]]*/"";
+        this.instanceName = /*[[${title}]]*/"";
+        this.serviceUrl = /*[[${serviceUrl}]]*/"";
+        /*]]>*/
+    </script>
+    <script th:unless="${#lists.isEmpty(JS_LIBS)}" th:each="libJs : ${JS_LIBS}" th:if="${!#strings.equals(libJs, '')}" th:src="${libJs}" type="text/javascript"></script>
+
+    <link th:unless="${#lists.isEmpty(CSS_LIBS)}" th:each="libCss : ${CSS_LIBS}" th:if="${!#strings.equals(libCss, '')}" th:href="${libCss}" rel="stylesheet" />
+    
+    <div th:remove="tag" th:unless="${#lists.isEmpty(HTML_LIBS)}" th:each="libHtml : ${HTML_LIBS}" th:utext="${libHtml}"></div>
+</head>
+<body>
+	<header th:unless="${#strings.isEmpty(HEADER)}" th:with="include_url=|'${HEADER}' ${verticalBar} trusted|" th:attr="data-ng-include=${include_url}"></header>
+        <div id="container-content">
+            <div id="content" ui-view=""></div>
+        </div>
+	<footer th:unless="${#strings.isEmpty(FOOTER)}" th:with="include_url=|'${FOOTER}' ${verticalBar} trusted|" th:attr="data-ng-include=${include_url}"></footer>
+	
+	
+	<script th:inline="javascript">
+	/*<![CDATA[*/
+        
+        var tryModules = function(names) {
+            var retArr = [];
+            for (var i = 0; i < names.length; i++) {
+                var m;
+                try {
+                  m = angular.module(names[i]);
+                } catch(err) {
+                  m = null;
+                }
+                if (m != null) {
+                    retArr.push(names[i]);
+                }
+            }
+            return retArr;
+          };
+
+        
+	var app = angular.module(instanceName + "_APP", tryModules(['ui.router', 'ngMaterial', 'ngAnimate', 'angular-carousel', 'ngProgress', 'wanagames', 'wannabetApp']))
+
+        app.factory("datatron", ['$http', '$q', '$rootScope', function ($http, $q, $rootScope) {
+            
+            var datatronStore = [];
+            var lastTimeGetted = null;
+            
+            function getDataOf(slug) {
+                return obtainData().then(function (data) {
+                    for (var i=0; i < data.length; i++) {
+                        if (data[i].name === slug) {
+                            return mock(data[i]);
+                        }
+                    }
+                });
+            }
+            
+            $rootScope.obteniendo = false;
+            
+            function obtainData() {
+                if (!$rootScope.obteniendo) {
+                    console.log("no estaba obteniendo");
+                    return recollectData();
+                }  else {
+                    console.log("estaba obteniendo");
+                    var deferred = $q.defer();
+                    var stopwatch = $rootScope.$watch("obteniendo", function (newV, oldV) {
+                        console.log("obteniendo cambio");
+                        console.log(newV);
+                        if (newV === false) {
+                            console.log("y ya llegooo");
+                            stopwatch();
+                            deferred.resolve(datatronStore);
+                        }
+                    });
+                    
+                    return deferred.promise;
+                }
+            }
+            
+            function recollectData() {
+                $rootScope.obteniendo = true;
+                var hora = new Date();
+                var haPasado = 20;
+                if (lastTimeGetted) {
+                    haPasado = Math.round((hora - lastTimeGetted) / (1000  ));
+                    
+                }
+                //si han pasado 10 minutos volvemos a pedir datos
+                if (haPasado > 10) {
+                    console.log("han pasado los 10 segundos, pedimos");
+                    return makeCall().then(function (response) {
+                        datatronStore = response.data;
+                        lastTimeGetted = new Date();
+                        $rootScope.obteniendo = false;
+                        window.localStorage.setItem("datatron", JSON.stringify(datatronStore));
+                        return datatronStore;
+                    });
+                } else {
+                    console.log("devolvemos lo que tenemos en localstorage");
+                    var defered = $q.defer();
+                    
+                    defered.resolve(JSON.parse(window.localStorage.getItem("datatron")));
+                    $rootScope.obteniendo = false;
+                        
+                    return defered.promise;
+                }
+                
+                
+            }
+            
+            function makeCall() {
+                return $http
+                    .get(serviceUrl);
+            }
+            
+            function mock(data) {
+                // makes data look like a promise
+                var defer = $q.defer();
+                defer.resolve(data);
+                return defer.promise;
+            }
+            
+            function postUserData(key, data) {
+                var defered = $q.defer();
+                    
+                if (!$rootScope.loginStatus) {
+                    console.log("postUserData no logado");
+                    defered.reject("NOT_LOGGED_USER");
+                } else {
+                    obtainUserId().then(function (uid) {
+                        $http.post(boBaseUrl + instanceName + "/datatron/" + $rootScope.userid + "/" + key, data).then(function (response) {
+                            defered.resolve(response);
+                        });
+                    });
+                }
+                
+                
+                return defered.promise;
+            }
+            
+            function obtainUserId() {
+                var defered = $q.defer();
+                if ($rootScope.userid) {
+                    defered.resolve($rootScope.userid);
+                } else {
+                    var _oldNotifyLoginTokenCallback = window.NotifyLoginTokenCallBack;
+                    window.NotifyLoginTokenCallBack = function (token, playerId) {
+                        $rootScope.userid = playerId;
+                        window.NotifyLoginTokenCallBack = _oldNotifyLoginTokenCallback;
+                        //postUserData(key, data);
+                        defered.resolve(playerId);
+                    };
+                    //ñapa para obtener el playerid
+                    getLoginToken("KAMBI");
+                }
+                return defered.promise;
+                
+            }
+            
+            function getUserData(key) {
+                var defered = $q.defer();
+                if (!$rootScope.loginStatus) {
+                    console.log("getUserData no logado");
+                    defered.reject("NOT_LOGGED_USER");
+                } else {
+                    
+                    obtainUserId().then(function (uid) {
+                        $http
+                            .get(boBaseUrl + instanceName + "/datatron/" + $rootScope.userid + "/" + key).then(function (response) {
+                                defered.resolve(response);
+                        });
+                    });
+                }
+                return defered.promise;
+            }
+            
+            function getAllUserData() {
+                var defered = $q.defer();
+                if (!$rootScope.loginStatus) {
+                    console.log("getAllUserData no logado");
+                    defered.reject("NOT_LOGGED_USER");
+                } else {
+                    
+                    obtainUserId().then(function (uid) {
+                        $http
+                            .get(boBaseUrl + instanceName + "/datatron/" + $rootScope.userid + "/all").then(function (response) {
+                                defered.resolve(response);
+                        });
+                    });
+                }
+                return defered.promise;
+            }
+            
+            
+            return {
+                obtainData: obtainData,
+                getDataOf : getDataOf,
+                postUserData : postUserData,
+                getUserData : getUserData,
+                getAllUserData : getAllUserData,
+                obtainUserId: obtainUserId
+            };
+            
+        }]);
+    
+    
+	var routes = /*[[${routes}]]*/[];
+        
+        
+        
+	app.config(["$stateProvider", "$urlRouterProvider", "$locationProvider", "$sceDelegateProvider", function ($stateProvider, $urlRouterProvider, $locationProvider, $sceDelegateProvider) {
+		
+		$sceDelegateProvider.resourceUrlWhitelist(['self',[[${uploads_base_url_with_asterisk}]]]); 
+		
+		$locationProvider.hashPrefix('!');
+                
+                $urlRouterProvider.when('', '/');
+		$urlRouterProvider.otherwise('/404');
+		for (var i = 0; i < routes.length; i++ ) {
+			if (routes[i].route && routes[i].templateUrl) {
+				$stateProvider.state(routes[i].name, {
+					url: routes[i].route,
+					templateUrl: routes[i].templateUrl
+				});
+			}
+		}
+		
+		
+	}]);
+    
+        window.currentAPP = app;
+
+	/*]]>*/
+	</script>
+
+       
+        <div th:remove="tag" th:unless="${#lists.isEmpty(HTML_SCRIPTS)}" th:each="scriptHtml : ${HTML_SCRIPTS}" th:utext="${scriptHtml}"></div>
+        
+        
+        <script th:unless="${#lists.isEmpty(JS_SCRIPTS)}" th:each="scriptJs : ${JS_SCRIPTS}" th:if="${!#strings.equals(scriptJs, '')}" th:src="${scriptJs}" type="text/javascript"></script>
+
+        <link th:unless="${#lists.isEmpty(CSS_SCRIPTS)}" th:each="scriptCss : ${CSS_SCRIPTS}" th:if="${!#strings.equals(scriptCss, '')}" th:href="${scriptCss}" rel="stylesheet" />
+
+	
+</body>
+</html>

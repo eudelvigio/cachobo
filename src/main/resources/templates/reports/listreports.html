@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+    <script th:src="@{/js/reports_list.js}" src="/static/js/reports_list.js"></script>
+</head>
+<body>
+<div class="container-full">
+	<div class="row">
+	    <div class="col-sm-2">
+	         <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+	    </div>
+	    <div class="col-sm-10">
+                <div class="row form-group">
+                    <label class="col-sm-6 control-label" th:text="#{reports.report_selector}"></label>
+                    <div class="col-sm-6">
+                        <select id='reportSelector'>
+                            <option value=""> - </option>
+                            <option th:each="userDataForReport : ${userDatasForReport}" th:value="${userDataForReport}" th:text="${userDataForReport}"></option>
+                        </select>
+                    </div>
+                </div>
+                
+                
+                <div class="row form-group">
+                    
+                    <input type="button" id="downloadReportBtn" th:value="#{reports.btn_go_to_report}" />
+                    
+                    
+                </div>
+                
+	    </div>
+            
+    </div>
+</div>
+
+</body>
+</html>

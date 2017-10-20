@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+</head>
+<body>
+<div class="container-full">
+	<div class="row">
+	    <div class="col-sm-2">
+	         <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+	    </div>
+	    <div class="col-sm-10">
+		<span class="new" sec:authorize="hasAnyAuthority('SUPERADMIN', 'SITE_ADMIN')"><a href="#" th:href="@{'/messaging/new'}" th:text="#{global.new}"></a></span>
+		        <div class="table-container" th:if="${not #lists.isEmpty(messagings)}">
+		        <h2><p th:text="#{messagings.messagings_list}"></p></h2>
+		        <table class="table table-striped">
+		            <tr>
+		                <th><p th:text="#{global.id}"></p></th>
+		                <th><p th:text="#{messagings.messaging_name}"></p></th>
+		                <th><p th:text="#{messagings.users_on_list}"></p></th>
+		                <th><p th:text="#{global.send_messages}">Send Messages</p></th>
+		                <th><p th:text="#{global.edit}">Edit</p></th>
+		            </tr>
+		            <tr th:each="messaging : ${messagings}">
+		                <td th:text="${messaging.id}"><a href="/messaging/${messaging.id}"></a></td>
+		                <td th:text="${messaging.name}"></td>
+		                <td th:text="${#lists.size(messaging.users)}"></td>
+		                <td><a th:href="@{/messaging/{id}(id=${messaging.id})}" th:text="#{global.send_messages}">Send messages</a></td>
+		                <td><a th:href="@{/messaging/edit/{id}(id=${messaging.id})}" th:text="#{global.edit}">Edit</a></td>
+		            </tr>
+		        </table>
+		
+		    </div>
+	    </div>
+    </div>
+</div>
+
+</body>
+</html>

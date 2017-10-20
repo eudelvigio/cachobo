@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+     <script th:inline="javascript">
+/*<![CDATA[*/
+    
+    function copySite(me) {
+        var nuevoNombre = prompt('Introduce el nuevo nombre');
+        
+        
+        if (nuevoNombre!=null && nuevoNombre != '') 
+            window.open('/wanaba/site/copysite/' + me.getAttribute('id') + '/'+ nuevoNombre);
+        else 
+            alert('mal');
+    }
+    
+  /*]]>*/  
+    </script>
+    
+</head>
+<body>
+<div class="container-full">
+	<div class="row">
+	    <div class="col-sm-2">
+	         <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+	    </div>
+	    <div class="col-sm-10">
+                <span sec:authorize="hasAuthority('SUPERADMIN')" class="new"><a href="#" th:href="@{'/site/new'}" th:text="#{global.new}"></a></span>
+		    <div th:if="${not #lists.isEmpty(sites)}">
+		        <h2 th:text="#{sites.site_list}"></h2>
+                        
+		        <table class="table table-striped">
+		            <tr>
+		                <th><p th:text="#{global.id}"></p></th>
+		                <th><p th:text="#{sites.site_name}"></p></th>
+		                <th><p th:text="#{sites.site_version}"></p></th>
+		                <th><p th:text="#{sites.site_domain}"></p></th>
+		                <th><p th:text="#{sites.download_zip_published}">download zip published</p></th>
+		                <th><p th:text="#{sites.upload_published}">upload published</p></th>
+		                <th><p th:text="#{sites.get_html}">get html</p></th>
+		                <th><p th:text="#{global.view}">View</p></th>
+		                <th><p th:text="#{global.sensitive_datas}">Sensitive datas</p></th>
+		                <th><p th:text="#{global.edit}">Edit</p></th>
+		            </tr>
+		            <tr th:each="site : ${sites}">
+		                <td th:text="${site.id}"><a href="/site/${site.id}">Id</a></td>
+		                <td th:text="${site.name}">Name</td>
+		                <td th:text="${site.version}">Version</td>
+		                <td th:text="${site.domain}">Domain</td>
+		                <td><a th:href="@{/site/downloadproduction/{id}(id=${site.id})}" target="_blank" th:text="#{sites.download_zip_published}">download zip published</a></td>
+		                <td><a th:href="@{/site/compileandsendbyftp/{id}(id=${site.id})}" target="_blank" th:text="#{sites.upload_published}">upload published</a></td>
+		                <td><a th:href="@{/site/gethtml/{id}(id=${site.id})}" th:text="#{sites.get_html}">Get HTML</a></td>
+		                <td><a th:href="@{/site/{id}(id=${site.id})}" th:text="#{global.view}">View</a></td>
+		                <td><a th:href="@{/site/sitesensitivedatas/{id}(id=${site.id})}"  th:text="#{global.sensitive_datas}">Sensitive datas</a></td>
+		                <td><a th:href="@{/site/edit/{id}(id=${site.id})}" th:text="#{global.edit}">Edit</a></td>
+		            </tr>
+		        </table>
+		
+		    </div>
+	    </div>
+    </div>
+</div>
+
+</body>
+</html>

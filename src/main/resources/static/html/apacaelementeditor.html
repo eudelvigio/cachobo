@@ -1,0 +1,566 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link type="text/css" rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
+        <link type="text/css" href="//code.cloudcms.com/alpaca/1.5.23/bootstrap/alpaca.min.css" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/webjars/jquery-ui/1.10.4/themes/base/minified/jquery-ui.min.css" rel="stylesheet" media="screen" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" />
+        <script type="text/javascript" src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/webjars/jquery-ui/1.10.4/ui/minified/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.6.3/tinymce.min.js"></script>
+        <script type="text/javascript" src="//code.cloudcms.com/alpaca/1.5.23/bootstrap/alpaca.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+        <script src="/wanaba/js/plugins/embed/editor_plugin_src.js"></script>
+        
+        
+        <script src="/wanaba/js/tag-it.min.js"></script>
+        <link href="/wanaba/css/jquery.tagit.css" rel="stylesheet" media="screen"/>
+    </head>
+    <body>
+        <div id="form"></div>
+        <script type="text/javascript">
+            
+            function getParameterByName(name, url) {
+                if (!url) url = window.location.href;
+                name = name.replace(/[\[\]]/g, "\\$&");
+                var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                    results = regex.exec(url);
+                if (!results) return null;
+                if (!results[2]) return '';
+                return decodeURIComponent(results[2].replace(/\+/g, " "));
+            }
+            
+            $(document).ready(function() {
+                
+                var media = getParameterByName("idmedia");
+                
+                var mediaData = getParameterByName("idmediadata");
+                
+                var fileManagerRoute = getParameterByName("route");
+                
+                
+                Alpaca.Fields.TinyMCEField = Alpaca.Fields.TextAreaField.extend({
+                    /**
+                    * @see Alpaca.Fields.TextAreaField#getFieldType
+                    */
+                   getFieldType: function() {
+                       return "tinymce";
+                   },
+
+                   /**
+                    * @see Alpaca.Fields.TextAreaField#setup
+                    */
+                   setup: function()
+                   {
+                       var self = this;
+
+                       if (!this.data)
+                       {
+                           this.data = "";
+                       }
+
+                       if (!self.options.toolbar)
+                       {
+                           self.options.toolbar = "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image";
+                       }
+
+                       this.base();
+                   },
+
+                   setValue: function(value)
+                   {
+                       var self = this;
+
+                       // be sure to call into base method
+                       this.base(value);
+
+                       if (self.editor)
+                       {
+                           self.editor.setContent(value);
+                       }
+                   },
+
+                   /**
+                    * @see Alpaca.Fields.ControlField#getControlValue
+                    */
+                   getControlValue:function()
+                   {
+                       var self = this;
+
+                       var value = null;
+
+                       if (self.editor)
+                       {
+                           value = self.editor.getContent()
+                       }
+
+                       return value;
+                   },
+
+                   initTinyMCEEvents: function()
+                   {
+                       var self = this;
+
+                       if (self.editor) {
+
+                           // click event
+                           self.editor.on("click", function (e) {
+                               self.onClick.call(self, e);
+                               self.trigger("click", e);
+                           });
+
+                           // change event
+                           self.editor.on("change", function (e) {
+                               self.onChange();
+                               self.triggerWithPropagation("change", e);
+                           });
+
+                           // blur event
+                           self.editor.on('blur', function (e) {
+                               self.onBlur();
+                               self.trigger("blur", e);
+                           });
+
+                           // focus event
+                           self.editor.on("focus", function (e) {
+                               self.onFocus.call(self, e);
+                               self.trigger("focus", e);
+                           });
+
+                           // keypress event
+                           self.editor.on("keypress", function (e) {
+                               self.onKeyPress.call(self, e);
+                               self.trigger("keypress", e);
+                           });
+
+                           // keyup event
+                           self.editor.on("keyup", function (e) {
+                               self.onKeyUp.call(self, e);
+                               self.trigger("keyup", e);
+                           });
+
+                           // keydown event
+                           self.editor.on("keydown", function (e) {
+                               self.onKeyDown.call(self, e);
+                               self.trigger("keydown", e);
+                           });
+                       }
+                   },
+                   afterRenderControl: function(model, callback) {
+                        var n = this;
+                        this.base(model, function() {
+                            !n.isDisplayOnly() && n.control && "undefined" != typeof tinyMCE && n.on("ready", function() {
+                                if (!n.editor) {
+                                    var t = $(n.control)[0].id;
+                                        tinymce.init({
+                                            init_instance_callback: function(editor) {
+                                            n.editor = editor;
+
+                                            n.initTinyMCEEvents();
+                                        },
+                                        selector: "#" + t,
+                                        plugins: [
+                                         'embed advlist autolink lists link image charmap print preview anchor',
+                                         'searchreplace visualblocks code fullscreen',
+                                         'insertdatetime media table contextmenu paste code',
+                                         'textcolor'
+                                       ],
+                                       toolbar: 'undo redo | insert | styleselect | bold italic forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+                                       file_browser_callback : function(field_name, url, type, win) { 
+
+                                       // from http://andylangton.co.uk/blog/development/get-viewport-size-width-and-height-javascript
+                                           var w = window,
+                                           d = document,
+                                           e = d.documentElement,
+                                           g = d.getElementsByTagName('body')[0],
+                                           x = w.innerWidth || e.clientWidth || g.clientWidth,
+                                           y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+                                           var filemanagerRouteBase = $(".currentFileManagerRoute").val();
+                                           var cmsURL = '/wanaba/filemanager/index.html?field_name='+field_name+"&exclusiveFolder="+fileManagerRoute;
+
+                                           if(type == 'image') {		    
+                                               cmsURL = cmsURL + "&type=images";
+                                           }
+
+                                           tinyMCE.activeEditor.windowManager.open({
+                                               file : cmsURL,
+                                               title : 'Filemanager',
+                                               width : x * 0.8,
+                                               height : y * 0.8,
+                                               resizable : "yes",
+                                               close_previous : "no"
+                                           });		    
+
+                                       }
+
+
+                                   });
+                                }
+                            }), callback();
+                        });
+                    },
+
+                    /**
+                     * @see Alpaca.Field#destroy
+                     */
+                    destroy: function()
+                    {
+                        var self = this;
+
+                        // destroy the plugin instance
+                        if (self.editor)
+                        {
+                            self.editor.remove();
+                            self.editor = null;
+                        }
+
+                        // call up to base method
+                        this.base();
+                    },
+
+
+                    /* builder_helpers */
+
+                    /**
+                     * @see Alpaca.Fields.TextAreaField#getTitle
+                     */
+                    getTitle: function() {
+                        return "TinyMCE Editor";
+                    },
+
+                    /**
+                     * @see Alpaca.Fields.TextAreaField#getDescription
+                     */
+                    getDescription: function() {
+                        return "Provides an instance of a TinyMCE control for use in editing HTML.";
+                    },
+
+                    /**
+                     * @private
+                     * @see Alpaca.ControlField#getSchemaOfOptions
+                     */
+                    getSchemaOfOptions: function() {
+                        return Alpaca.merge(this.base(), {
+                            "properties": {
+                                "toolbar": {
+                                    "title": "TinyMCE toolbar options",
+                                    "description": "Toolbar options for TinyMCE plugin.",
+                                    "type": "string"
+                                }
+                            }
+                        });
+                    },
+
+                    /**
+                     * @private
+                     * @see Alpaca.ControlField#getOptionsForOptions
+                     */
+                    getOptionsForOptions: function() {
+                        return Alpaca.merge(this.base(), {
+                            "fields": {
+                                "toolbar": {
+                                    "type": "text"
+                                }
+                            }
+                        });
+                    }
+
+                    /* end_builder_helpers */
+                });
+                Alpaca.registerFieldClass("tinymce", Alpaca.Fields.TinyMCEField);
+                    
+                
+                
+                Alpaca.Fields.MyTagsField = Alpaca.Fields.TextField.extend({
+                    
+                    afterRenderControl: function(model, callback) {
+                        var n = this;
+                        this.base(model, function() {
+                            !n.isDisplayOnly() && n.control && "undefined" != typeof tinyMCE && n.on("ready", function() {
+                                if (!n.editor) {
+                                    var t = $(n.control)[0].id;
+                                    $(n.control).tagit({singleField: true, allowSpaces: true});
+                                }
+                            }), callback();
+                        });
+                    }
+                    
+                });
+                Alpaca.registerFieldClass("mytags", Alpaca.Fields.MyTagsField);
+                
+                
+                
+                
+                var whoAmI;
+                var opened = null;
+        
+                function launchFileManager(IAm) {
+                    whoAmI = $(IAm).attr("id");;
+                    var filemanagerRouteBase = $(".currentFileManagerRoute").val();
+                    
+                    if (opened != null) {opened.close();}
+                    
+                    opened = window.open("/wanaba/filemanager/index.html?exclusiveFolder=" + fileManagerRoute, "_blank", "width=1000,height=700");
+
+                }
+                
+                window.SetUrl = function () {
+                    console.log(arguments);
+
+                    $("#" + whoAmI).val(arguments[0]);
+                    $("#" + whoAmI).parent().find("img").attr("src", arguments[0]);
+
+                };
+                
+                
+                function getTypeByXtraType(type) {
+                    
+                    switch (type) {
+                        case "PRINCIPAL_NAME":
+                        case "STRING":
+                            return "text";
+                            break;
+                        case "CSS":
+                        case "JS":
+                            return "textarea";
+                            break;
+                        case "INTEGER": 
+                            return "integer";
+                            break;
+                        case "RICH_STRING":
+                            return "tinymce";
+                            break;
+                        case "DATETIME":
+                            return "datetime";
+                            break;
+                        case "DATE":
+                            return "date";
+                            break;
+                        case "IMAGE":
+                        case "PRINCIPAL_IMAGE":
+                            return "image";
+                            break;
+                        case "URL":
+                            return "url";
+                            break;
+                        case "BOOLEAN":
+                            return "checkbox";
+                            break;
+                        case "TAGS":
+                            return "mytags";
+                            break;
+                        case "SELECT":
+                            return "select";
+                            break;
+                    }
+                    
+                    return "hidden";
+                }
+                
+                function getEventsByXtraType(type) {
+                    
+                    switch (type) {
+                        case "IMAGE":
+                        case "PRINCIPAL_IMAGE":
+                            return {"dblclick": function () {launchFileManager(this);}};
+                            break;
+                    }
+                    
+                    return {};
+                }
+                
+                
+                function getDataFromMediaDataXtra(data, mediaDataXtra) {
+                    data[mediaDataXtra.xtraKey] = mediaDataXtra.xtraValue;
+                    return data;
+                }
+                
+                function getSchemaPropertiesFromMediaDataXtra(schemaProperties, mediaDataXtra) {
+                    schemaProperties[mediaDataXtra.xtraKey] = {};
+                    schemaProperties[mediaDataXtra.xtraKey].type = getTypeByXtraType(mediaDataXtra.xtraType);
+                    schemaProperties[mediaDataXtra.xtraKey].title = mediaDataXtra.xtraKey;
+                    
+                    if (getTypeByXtraType(mediaDataXtra.xtraType) == "select") {
+                        debugger;
+                        $.ajax("/wanaba/medias/getdefaultmediadatabymediadata/" + mediaData).done(function (rsp) {
+                            console.log(rsp);
+                            for (var i=0; i < rsp.mediaDataXtra.length; i++) {
+                                if (mediaDataXtra.xtraKey == rsp.mediaDataXtra[i].xtraKey) {
+                                    schemaProperties[mediaDataXtra.xtraKey].enum = rsp.mediaDataXtra[i].xtraValue.split(",");
+                                }
+                            }
+                            
+                        });
+                        
+                        
+                        
+                    }
+                    
+                    return schemaProperties;
+                }
+                
+                function getOptionFieldsFromMediaDataXtra(optionFields, mediaDataXtra) {
+                    optionFields[mediaDataXtra.xtraKey] = {};
+                    optionFields[mediaDataXtra.xtraKey].type = getTypeByXtraType(mediaDataXtra.xtraType);
+                    optionFields[mediaDataXtra.xtraKey].helper = mediaDataXtra.xtraDescription;
+                    optionFields[mediaDataXtra.xtraKey].events = getEventsByXtraType(mediaDataXtra.xtraType);
+                    optionFields[mediaDataXtra.xtraKey].dateFormat = "";
+                    
+                    return optionFields;
+                }
+                
+                if (mediaData == null || mediaData == "") {
+                    //no es mediadata, así que será la lista de mediaXtras para el sitio
+                    $.ajax("/wanaba/medias/getmediaxtra/" + media).then(function (resp) {
+                        var data = {};
+
+                        var schema = {};
+
+                        var options = {};
+
+                        //schema
+                        schema.title = "Editor configuración";
+                        schema.description = "Introduzca los cambios y haga click en guardar";
+                        schema.type = "object";
+                        schema.properties = {};
+
+                        options.form = {};
+                        options.form.attributes = {};
+                        options.form.attributes.action = "/wanaba/medias/setmediaxtra/" + media;
+                        options.form.attributes.method = "post";
+
+                        options.form.buttons = {};
+                        options.form.buttons.submit = {};
+                        options.form.buttons.submit.title = "Enviar";
+                        options.form.buttons.submit.click = function () {this.ajaxSubmit().done(function () {alert("guardado"); window.close();});};
+
+                        options.helper = "Introduzca los cambios y haga click en guardar";
+
+                        options.fields = {};
+
+
+                        for (var i = 0; i < resp.length; i++) {
+
+                            data = getDataFromMediaDataXtra(data, resp[i]);
+
+
+                            schema.properties = getSchemaPropertiesFromMediaDataXtra(schema.properties, resp[i]);
+
+
+                            options.fields = getOptionFieldsFromMediaDataXtra(options.fields, resp[i]);
+
+                        }
+
+                        data["idMedia"] = media;
+                        schema.properties["idMedia"] = {};
+                        schema.properties["idMedia"].type = "hidden";
+                        options.fields["idMedia"] = {};
+                        options.fields["idMedia"].type = "hidden";
+
+                        $("#form").alpaca({
+                            "data": data,
+                            "schema": schema,
+                            "options": options
+                        });
+                    });
+                } else {
+                
+                    $.ajax("/wanaba/medias/getmediadata/" + mediaData).then(function (resp) {
+                        var data = {};
+
+                        var schema = {};
+
+                        var options = {};
+
+                        //schema
+                        schema.title = "Editor Elemento";
+                        schema.description = "Introduzca los cambios y haga click en guardar";
+                        schema.type = "object";
+                        schema.properties = {};
+
+                        options.form = {};
+                        options.form.attributes = {};
+                        options.form.attributes.action = "/wanaba/medias/setmediadata/" + mediaData;
+                        options.form.attributes.method = "post";
+
+                        options.form.buttons = {};
+                        options.form.buttons.submit = {};
+                        options.form.buttons.submit.title = "Enviar";
+                        options.form.buttons.submit.click = function () {this.ajaxSubmit().done(function () {alert("guardado"); window.close();});};
+
+                        options.form.buttons.delete = {};
+                        options.form.buttons.delete.title = "Borrar";
+                        options.form.buttons.delete.click = function () {if (confirm("¿Seguro que desea borrar el elemento?")) {$.ajax({url: "/wanaba/medias/deletemediadata/" + mediaData}).complete(function () {window.opener.location.reload(); window.close();})}};
+
+                        options.helper = "Introduzca los cambios y haga click en guardar";
+
+                        options.fields = {};
+
+
+                        for (var i = 0; i < resp.mediaDataXtra.length; i++) {
+
+                            data = getDataFromMediaDataXtra(data, resp.mediaDataXtra[i]);
+
+
+                            schema.properties = getSchemaPropertiesFromMediaDataXtra(schema.properties, resp.mediaDataXtra[i]);
+
+
+                            options.fields = getOptionFieldsFromMediaDataXtra(options.fields, resp.mediaDataXtra[i]);
+
+                        }
+
+                        data["idMedia"] = media;
+                        schema.properties["idMedia"] = {};
+                        schema.properties["idMedia"].type = "hidden";
+                        options.fields["idMedia"] = {};
+                        options.fields["idMedia"].type = "hidden";
+
+                        data["idMediaData"] = mediaData;
+                        schema.properties["idMediaData"] = {};
+                        schema.properties["idMediaData"].type = "hidden";
+                        options.fields["idMediaData"] = {};
+                        options.fields["idMediaData"].type = "hidden";
+
+                        data["publicationDate"] = resp.publication;
+                        schema.properties["publicationDate"] = {};
+                        schema.properties["publicationDate"].type = "datetime";
+                        schema.properties["publicationDate"].title = "Fecha de publicación";
+                        options.fields["publicationDate"] = {};
+                        options.fields["publicationDate"].type = "datetime";
+                        options.fields["publicationDate"].helpers = ["El elemento se mostrará sólo si se ha superado la fecha indicada", "Si está vacío, no tiene ningún efecto y el elemento siempre estará publicado"];
+                        options.fields["publicationDate"].dateFormat = "YYYY-MM-DDTHH:mm:ss.sssZ";
+
+                        data["expirationDate"] = resp.expiration;
+                        schema.properties["expirationDate"] = {};
+                        schema.properties["expirationDate"].type = "datetime";
+                        schema.properties["expirationDate"].title = "Fecha de expiración";
+                        options.fields["expirationDate"] = {};
+                        options.fields["expirationDate"].type = "datetime";
+                        options.fields["expirationDate"].helpers = ["El elemento se marcará como expirado si se supera la fecha indicada", "Si está vacío, no tiene ningún efecto"];
+                        options.fields["expirationDate"].dateFormat = "YYYY-MM-DDTHH:mm:ss.sssZ";
+
+                        data["deletionDate"] = resp.deletion;
+                        schema.properties["deletionDate"] = {};
+                        schema.properties["deletionDate"].type = "datetime";
+                        schema.properties["deletionDate"].title = "Fecha de borrado";
+                        options.fields["deletionDate"] = {};
+                        options.fields["deletionDate"].type = "datetime";
+                        options.fields["deletionDate"].helpers = ["El elemento dejará de mostrarse cuando se supere la fecha indicada", "Si está vacío, no tiene ningún efecto y el elemento siempre se mostrará"];
+                        options.fields["deletionDate"].dateFormat = "YYYY-MM-DDTHH:mm:ss.sssZ";
+
+
+                        $("#form").alpaca({
+                            "data": data,
+                            "schema": schema,
+                            "options": options
+                        });
+                    });
+                }
+            });
+        </script>
+    </body>
+</html>

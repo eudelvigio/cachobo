@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+    <script th:src="@{/js/gridmanager.js}" src="/static/js/gridmanager.js"></script>
+    <script th:src="@{/js/element.js}" src="/static/js/element.js"></script>
+    <script th:src="@{/js/common.js}" src="/static/js/common.js"></script>
+    
+    <link href="../static/css/gridmanager.css"
+          th:href="@{/css/gridmanager.css}" rel="stylesheet" media="screen"/>
+    <link href="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/lib/codemirror.css"
+          th:href="@{/webjars/codemirror/5.23.0-1/lib/codemirror.css}" rel="stylesheet" media="screen"/>
+    <script th:inline="javascript">
+/*<![CDATA[*/
+   
+    
+    
+/*]]>*/
+    </script>
+</head>
+<body>
+<div class="container-full">
+    <div class="row">
+	    <div class="col-sm-2">
+	         <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+	    </div>
+	    <div class="col-sm-10">
+		    <h2 th:text="#{elements.element}"></h2>
+		    <div>
+		        <form id="formElement" class="form-horizontal" th:object="${element}" th:action="@{/element}" method="post">
+		            <input id="currentIdElement" type="hidden" th:field="*{id}"/>
+		            <input type="hidden" th:field="*{version}"/>                            
+                            <input type="hidden" class="currentFileManagerRoute" th:field="*{fileManagerRoute}"/>
+		            
+		            <div class="form-group">
+		                <label class="col-sm-2 control-label" th:text="#{elements.element_name}"></label>
+		                <div class="col-sm-10">
+		                    <input type="text" class="form-control" th:field="*{name}"/>
+		                </div>
+		            </div>
+		            <div class="form-group">
+		                <label class="col-sm-2 control-label" th:text="#{elements.element_metadatas}"></label>
+                                
+                                <div id="metadatas-container" class="col-sm-10">
+                                    <input type="hidden" th:if="${not #lists.isEmpty(element.metaDatas)}" id="nextIOfMetaDatas" th:value="${#lists.size(element.metaDatas)}" />
+                                    <input type="hidden" th:if="${#lists.isEmpty(element.metaDatas)}" id="nextIOfMetaDatas" value="0" />
+                                    <ul id="prettyMetadataContainer">
+                                        <li th:attr="current-index=${iterationStatus.index}" class="metadata" th:if="${not #lists.isEmpty(element.metaDatas)}" th:each="elementMetadata,iterationStatus : ${element.metaDatas}" >
+                                            <a th:href="|javascript:editElementMetadata(${iterationStatus.index})|" th:text="${elementMetadata.description}"></a>
+                                            <a style='color:red' th:href="|javascript:delElementMetadata(${iterationStatus.index})|" th:text="#{elements.element_remove_metadata}"></a>
+                                            <input type="hidden" class="id" th:field="*{metaDatas[__${iterationStatus.index}__].id}" th:value="${elementMetadata.id}" />
+                                            <input type="hidden" class="version" th:field="*{metaDatas[__${iterationStatus.index}__].version}" th:value="${elementMetadata.version}" />
+                                            <input type="hidden" class="creation" th:field="*{metaDatas[__${iterationStatus.index}__].creation}" />
+                                            <input type="hidden" class="updated" th:field="*{metaDatas[__${iterationStatus.index}__].updated}" />
+                                            <input type="hidden" class="key" th:field="*{metaDatas[__${iterationStatus.index}__].key}" th:value="${elementMetadata.key}" />
+                                            <input type="hidden" class="scope" th:field="*{metaDatas[__${iterationStatus.index}__].scope}" th:value="${elementMetadata.scope}" />
+                                            <input type="hidden" class="storage" th:field="*{metaDatas[__${iterationStatus.index}__].storage}" th:value="${elementMetadata.storage}" />
+                                            <input type="hidden" class="where" th:field="*{metaDatas[__${iterationStatus.index}__].where}" th:value="${elementMetadata.where}" />
+                                            <input type="hidden" class="description" th:field="*{metaDatas[__${iterationStatus.index}__].description}" th:value="${elementMetadata.description}" />
+                                            <input type="hidden" class="isEditable" th:field="*{metaDatas[__${iterationStatus.index}__].isEditable}" th:value="${elementMetadata.isEditable}" />
+                                            <input type="hidden" class="script" th:field="*{metaDatas[__${iterationStatus.index}__].script}" th:value="${elementMetadata.script}" />
+                                            <input type="hidden" class="value" th:field="*{metaDatas[__${iterationStatus.index}__].value}" th:value="${elementMetadata.value}" />
+                                            <input type="hidden" class="element" th:name="metaDatas[__${iterationStatus.index}__].element" th:id="metaDatas__${iterationStatus.index}__.element" th:value="${element.id}" />
+                                        </li>
+                                    </ul>
+                                    <input type="button" onclick="addMetadata()" th:value="#{elements.element_add_metadata}" />
+                                </div>
+		            </div>
+                            
+                            <div class="form-group">
+		                <label class="col-sm-2 control-label" th:text="#{elements.element_dependencies}"></label>
+		                <div class="col-sm-10" id="dependencies-container">
+                                    <input type="hidden" th:if="${not #lists.isEmpty(element.dependencies)}" id="nextIOfDependencies" th:value="${#lists.size(element.dependencies)}" />
+                                    <input type="hidden" th:if="${#lists.isEmpty(element.dependencies)}" id="nextIOfDependencies" value="0" />
+                                    <ul id="prettyDependenciesContainer">
+                                        <li th:attr="current-index=${iterationStatus.index}" class="dependency"  th:if="${not #lists.isEmpty(element.dependencies)}" th:each="elementDependency,iterationStatus : ${element.dependencies}" >
+                                            <input type="hidden" class="dependency" th:field="*{dependencies[__${iterationStatus.index}__]}" />
+                                            <span th:text="${elementDependency.name}"></span>
+                                            <a style='color:red' th:href="|javascript:delElementDependency(${iterationStatus.index})|" th:text="#{elements.element_remove_dependency}"></a>
+                                           
+                                        </li>
+                                    </ul>
+                                    <input type="button" onclick="addDependency()" th:value="#{elements.element_add_dependency}" />
+                                </div>
+		            </div>
+                            
+                            <div class="form-group">
+		                <label class="col-sm-2 control-label" th:text="#{elements.element_dependents}"></label>
+		                <div class="col-sm-10" id="dependents-container">
+                                    <ul id="prettyDependentsContainer">
+                                        <li th:attr="current-index=${iterationStatus.index}" class="dependency"  th:if="${not #lists.isEmpty(element.dependents)}" th:each="elementDependent,iterationStatus : ${element.dependents}" >
+                                            <input type="hidden" class="dependent" th:field="*{dependents[__${iterationStatus.index}__]}" />
+                                            <span th:text="${elementDependent.name}"></span>
+                                        </li>
+                                    </ul>
+                                </div>
+		            </div>
+                            
+		            <div class="row">
+		                <button type="submit" id="submit" class="btn btn-default" th:text="#{global.submit}"></button>
+                                <button type="button" id="update" class="btn btn-default" >Actualiza el elemento existente</button>
+		            </div>
+		        </form>
+		    </div>
+		</div>
+    </div>
+</div> 
+    
+<div id="modalDependenciesContainer">
+    <div class="dependencySelectionContainer" th:onclick="'setDependency(\''+${dependency.id}+'\', \''+${dependency.name}+'\')'" th:each="dependency, itStatus : ${allElements}" >
+        <center><span th:text="${dependency.name}"></span></center>
+    </div>
+</div>
+    
+<div id="modalMetadataContainer">
+	<div class="container-full">
+			<input for-name="metaDatas[|_count_|].id" for-id="metaDatas|_count_|.id" type="hidden" class="newId" value="" />
+			<input for-name="metaDatas[|_count_|].version" for-id="metaDatas|_count_|.version" type="hidden" class="newVersion" value="0" />
+			<input for-name="metaDatas[|_count_|].element" for-id="metaDatas|_count_|.element" type="hidden" th:value="${element.id}" class="newElement" />
+			<div class="row form-group">
+			    <label class="col-sm-6 control-label" th:text="#{elements.metadata_key}"></label>
+			    
+			    <div class="col-sm-6">
+			    	<select for-name="metaDatas[|_count_|].key" for-id="metaDatas|_count_|.key"  id="newKey">
+                                    <option value=""> - </option>
+                                    <option th:each="key : ${T(com.rf.data.enums.EnumMetadata).values()}" th:value="${key}" th:text="|[${key}] ${key.description}|"></option>
+			    	</select>
+			    </div>
+			</div>
+			<div class="row form-group">
+			    <label class="col-sm-6 control-label" th:text="#{elements.metadata_scope}"></label>
+			    <div class="col-sm-6">
+			    	<select for-name="metaDatas[|_count_|].scope" for-id="metaDatas|_count_|.scope" id="newScope">
+                                    <option value=""> - </option>
+                                    <option th:each="key : ${T(com.rf.data.enums.EnumScope).values()}" th:value="${key}" th:text="|[${key}] ${key.description}|"></option>
+			    	</select>
+			    </div>
+			</div>
+			
+			<div class="row form-group">
+			    <label class="col-sm-6 control-label" th:text="#{elements.metadata_storage}"></label>
+			    <div class="col-sm-6">
+			    	<select for-name="metaDatas[|_count_|].storage" for-id="metaDatas|_count_|.storage" id="newStorage">
+                                    <option value=""> - </option>
+                                    <option th:each="key : ${T(com.rf.data.enums.EnumStorage).values()}" th:value="${key}" th:text="|[${key}] ${key.description}|"></option>
+			    	</select>
+			    </div>
+			</div>
+			<div class="row form-group">
+			    <label class="col-sm-6 control-label" th:text="#{elements.metadata_where}"></label>
+			    <div class="col-sm-6">
+			    	<select for-name="metaDatas[|_count_|].where" for-id="metaDatas|_count_|.where" id="newWhere">
+                                    <option value=""> - </option>
+                                    <option th:each="key : ${T(com.rf.data.enums.EnumWhere).values()}" th:value="${key}" th:text="|[${key}] ${key.description}|"></option>
+			    	</select>
+			    </div>
+			</div>
+			<div class="row form-group">
+			    <label class="col-sm-6 control-label" th:text="#{elements.metadata_value}"></label>
+			    <div class="col-sm-6">
+                                <textarea for-name="metaDatas[|_count_|].value" for-id="metaDatas|_count_|.value" type="text" class="value" id="newValue"></textarea>
+			    </div>
+			</div>
+			<div class="row form-group">
+			    <label class="col-sm-6 control-label" th:text="#{elements.metadata_description}"></label>
+			    <div class="col-sm-6">
+			        <input for-pretty="[|_aqui_|]" for-name="metaDatas[|_count_|].description" for-id="metaDatas|_count_|.description" type="text" class="description" id="newDescription" />
+			    </div>
+			</div>
+			<div class="row form-group">
+			    <label class="col-sm-6 control-label" th:text="#{elements.metadata_is_editable}"></label>
+			    <div class="col-sm-6">
+			        <select for-name="metaDatas[|_count_|].isEditable" for-id="metaDatas|_count_|.isEditable" type="text" class="isEditable" id="newIsEditable">
+                                    <option value=""> - </option>
+                                    <option value="true">TRUE</option>
+                                    <option value="false">FALSE</option>
+                                </select>
+			    </div>
+			</div>
+			<div class="row form-group">
+			    <label class="col-sm-6 control-label" th:text="#{elements.metadata_script}"></label>
+			    <div class="col-sm-6">
+			        <input for-name="metaDatas[|_count_|].script" for-id="metaDatas|_count_|.script" type="hidden" class="script" id="newScript" />
+			        <input type="text" class="labels" id="newScriptLbl" />
+			        <input type="button" onclick="launchFilemanager()" value="Lanza filemanager" />
+			        
+			    </div>
+			</div>
+	</div>
+</div>
+</body>
+</html>

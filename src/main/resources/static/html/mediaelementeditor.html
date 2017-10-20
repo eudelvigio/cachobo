@@ -1,0 +1,245 @@
+<html>
+    <head>
+        <title>Editor</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="https://cdn.jsdelivr.net/webjars/jquery/2.2.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/webjars/jquery-ui/1.10.4/ui/minified/jquery-ui.min.js"></script>
+            
+            <script src="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/lib/codemirror.js" 
+    		th:src="@{/webjars/codemirror/5.23.0-1/lib/codemirror.js}"></script>
+    <script src="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/mode/css/css.js" 
+    		th:src="@{/webjars/codemirror/5.23.0-1/mode/css/css.js}"></script>
+    <script src="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/mode/javascript/javascript.js" 
+    		th:src="@{/webjars/codemirror/5.23.0-1/mode/css/css.js}"></script>
+    <script src="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/mode/xml/xml.js" 
+    		th:src="@{/webjars/codemirror/5.23.0-1/mode/xml/xml.js}"></script>
+                
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.6.3/tinymce.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.6.3/tinymce.jquery.min.js"></script>
+    
+     <script src="/wanaba/js/tag-it.min.js"></script>
+   
+      <link href="https://cdn.jsdelivr.net/webjars/bootstrap/3.3.4/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.4/css/bootstrap.min.css}"
+          rel="stylesheet" media="screen" />
+     
+     <link href="https://cdn.jsdelivr.net/webjars/jquery-ui/1.10.4/themes/base/minified/jquery-ui.min.css"
+          rel="stylesheet" media="screen" />
+      <link href="http://cdn.jsdelivr.net/webjars/codemirror/5.23.0-1/lib/codemirror.css"
+          th:href="@{/webjars/codemirror/5.23.0-1/lib/codemirror.css}" rel="stylesheet" media="screen"/>
+    
+    <link href="/wanaba/css/jquery.tagit.css" rel="stylesheet" media="screen"/>
+    <style>
+        input,select {
+            
+            float: right;
+            
+        }    
+        
+        .containerXtraMetaDatas > div {
+            padding: 10px;
+            border: 1px solid #ccc;
+            height: 50px;
+            
+        }
+        
+        
+        #editor-area {
+            padding: 20px;
+            
+        }
+    </style>
+        
+    <script>
+        
+        var tengoTodo = false;
+        var whoAmI;
+        
+        function launchFileManager(IAm) {
+            whoAmI = IAm;
+            var filemanagerRouteBase = $(".currentFileManagerRoute").val();
+            opened = window.open("/wanaba/filemanager/index.html?exclusiveFolder="+filemanagerRouteBase, "_blank", "width=1000,height=700");
+
+        }
+        
+        
+        var myParentWindow = null;
+        
+        function recopilaDatos() {
+            for (var i = 0; i < codemirrors.length; i++) {
+                codemirrors[i].save();
+                
+                var target = $(codemirrors[i].getTextArea()).attr("mytarget");
+                $("[ID='"+target+"']").val($(codemirrors[i].getTextArea()).val());
+                
+            }
+            var datosACambiar = [];
+            $(document).find("input[id]").each(function () {
+                datosACambiar.push({id: $(this).attr("id"), val: $(this).val()});
+            });
+
+            myParentWindow.actualizaMisDatosDePopup(datosACambiar);
+            window.close();
+        }
+        window.magias = function (parentWindow) {
+            
+            
+        myParentWindow = parentWindow;
+            tinymce.init({
+                    selector: '[voyasermce=true]',
+                    height: 500,
+                    menubar: false,
+                    inline: true,
+                    textcolor_map: [
+                      "e31c79", "Wanarosa",
+                      "000000", "Black",
+                      "993300", "Burnt orange",
+                      "333300", "Dark olive",
+                      "003300", "Dark green",
+                      "003366", "Dark azure",
+                      "000080", "Navy Blue",
+                      "333399", "Indigo",
+                      "333333", "Very dark gray",
+                      "800000", "Maroon",
+                      "FF6600", "Orange",
+                      "808000", "Olive",
+                      "008000", "Green",
+                      "008080", "Teal",
+                      "0000FF", "Blue",
+                      "666699", "Grayish blue",
+                      "808080", "Gray",
+                      "FF0000", "Red",
+                      "FF9900", "Amber",
+                      "99CC00", "Yellow green",
+                      "339966", "Sea green",
+                      "33CCCC", "Turquoise",
+                      "3366FF", "Royal blue",
+                      "800080", "Purple",
+                      "999999", "Medium gray",
+                      "FF00FF", "Magenta",
+                      "FFCC00", "Gold",
+                      "FFFF00", "Yellow",
+                      "00FF00", "Lime",
+                      "00FFFF", "Aqua",
+                      "00CCFF", "Sky blue",
+                      "993366", "Red violet",
+                      "FFFFFF", "White",
+                      "FF99CC", "Pink",
+                      "FFCC99", "Peach",
+                      "FFFF99", "Light yellow",
+                      "CCFFCC", "Pale green",
+                      "CCFFFF", "Pale cyan",
+                      "99CCFF", "Light sky blue",
+                      "CC99FF", "Plum"
+                    ],
+                    plugins: [
+                      'advlist autolink lists link image charmap print preview anchor',
+                      'searchreplace visualblocks code fullscreen',
+                      'insertdatetime media table contextmenu paste code',
+                      'textcolor'
+                    ],
+                    toolbar: 'undo redo | insert | styleselect | bold italic forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+                    content_css: [],
+                    init_instance_callback: function (editor) {
+                        editor.on('Blur', function (e) {
+                            var tarjet = $(e.target.bodyElement).attr("mytarget");
+                            var content = e.target.getContent();
+                            $("[id='"+tarjet+"']").attr("value", content);
+                            
+                            //console.log($("[voyasermce]").html());
+                            //console.log(tinymce.get('[voyasermce=true]'));
+
+                        });
+                    },
+                    file_browser_callback : function(field_name, url, type, win) { 
+		    
+	            // from http://andylangton.co.uk/blog/development/get-viewport-size-width-and-height-javascript
+                        var w = window,
+                        d = document,
+                        e = d.documentElement,
+                        g = d.getElementsByTagName('body')[0],
+                        x = w.innerWidth || e.clientWidth || g.clientWidth,
+                        y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+                        var filemanagerRouteBase = $(".currentFileManagerRoute").val();
+                        var cmsURL = '/wanaba/filemanager/index.html?field_name='+field_name+"&exclusiveFolder="+filemanagerRouteBase;
+
+                        if(type == 'image') {		    
+                            cmsURL = cmsURL + "&type=images";
+                        }
+
+                        tinyMCE.activeEditor.windowManager.open({
+                            file : cmsURL,
+                            title : 'Filemanager',
+                            width : x * 0.8,
+                            height : y * 0.8,
+                            resizable : "yes",
+                            close_previous : "no"
+                        });		    
+
+                    }
+                  });
+            
+            if ($(document).find("ul.tagit").length > 0) {
+                $(document).find("ul.tagit").remove();
+
+            }
+            $("[voyasertagger=true]").tagit({singleField: true, allowSpaces: true});
+          
+            
+            
+            $("textarea.css-container").each(function() {
+                codemirrors.push(CodeMirror.fromTextArea(this, {
+                    mode: "text/css",
+                    lineNumbers: true,
+                    htmlMode: true,
+                    viewportMargin: Infinity
+
+                }));
+            });
+            
+            $("textarea.js-container").each(function() {
+                codemirrors.push(CodeMirror.fromTextArea(this, {
+                    mode: "text/javascript",
+                    lineNumbers: true,
+                    htmlMode: true,
+                    viewportMargin: Infinity
+
+                }));
+                 
+            });
+            
+            for (var i = 0; i < codemirrors.length; i++) {
+                codemirrors[i].setSize(null, 300);
+            }
+            
+            setTimeout(function () {
+                window.moveTo(0,0);
+            }, 100);
+            
+            
+            tengoTodo = true;
+            
+        };
+        window.SetUrl = function () {
+            console.log(arguments);
+
+            $(whoAmI).parent().find("[data-field='xtraValue']").val(arguments[0]);
+            $(whoAmI).parent().find("img").attr("src", arguments[0]);
+
+        };
+        var codemirrors = [];
+            
+    </script>
+        
+    </head>
+    <body>
+        <input type="hidden" id="currentFileManagerRoute" class="currentFileManagerRoute" />
+        <div id="editor-area">
+            
+        </div>
+        <button type="button" onclick="recopilaDatos()">OK</button>
+    </body>
+</html>

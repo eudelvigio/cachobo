@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+</head>
+<body>
+<div class="container-full">
+	<div class="row">
+	    <div class="col-sm-2">
+	         <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+	    </div>
+	    <div class="col-sm-10">
+                    <span class="new" sec:authorize="hasAuthority('SUPERADMIN')"><a href="#" th:href="@{/element/new}" th:text="#{global.new}"></a></span>
+		        <div class="table-container" th:if="${not #lists.isEmpty(elements)}">
+		        <h2><p th:text="#{elements.element_list}"></p></h2>
+		        <table class="table table-striped">
+		            <tr>
+		                <th><p th:text="#{global.id}"></p></th>
+		                <th><p th:text="#{elements.element_name}"></p></th>
+		                <th><p th:text="#{elements.element_version}"></p></th>
+		                <th><p th:text="#{global.view}">View</p></th>
+		                <th><p th:text="#{global.edit}">Edit</p></th>
+		            </tr>
+		            <tr th:each="element : ${elements}">
+		                <td th:text="${element.id}"><a href="/element/${element.id}"></a></td>
+		                <td th:text="${element.name}"></td>
+		                <td th:text="${element.version}"></td>
+		                <td><a th:href="@{/element/{id}(id=${element.id})}" th:text="#{global.view}">View</a></td>
+		                <td><a th:href="@{/element/edit/{id}(id=${element.id})}" th:text="#{global.edit}">Edit</a></td>
+		            </tr>
+		        </table>
+		
+		    </div>
+	    </div>
+    </div>
+</div>
+
+</body>
+</html>

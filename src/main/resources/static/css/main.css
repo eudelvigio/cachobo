@@ -1,0 +1,144 @@
+ .container-full {
+  	width: 100%;
+  	margin: 0 auto;
+  	padding: 20px;
+  }
+  
+
+.table-container {
+	
+	
+}
+
+.table-container .new {
+	float: right;
+}
+
+#selectElements .element {
+	width: 200px;
+	height: 100px;
+	margin: 20px;
+	border: 3px solid #bbb;
+	border-radius: 20px;
+	display: inline-block;
+	text-align: center;
+	cursor: pointer;
+}
+#selectElements .element:hover  {
+	background-color: #e31c79;
+	
+}
+
+#selectElements .element span {
+	line-height: 100px;
+}
+
+#selectElements #element-configurator {
+	display: none;
+	
+}
+
+.css-code-container {
+	border: 1px solid #ccc;
+	background-color: #ccc;
+	
+}
+
+.layouter {
+	border: 1px solid #ccc;
+	background-color: #ccc;
+	
+}
+.layouter.active {
+	border: 1px solid #ccc;
+	background-color: transparent;
+	
+}
+
+.element-media-container {
+    width: 200px;
+    height: 200px;
+    float: left;
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+.element-media-container .element-data {
+    display: none;
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    width: 100%;
+}
+
+.element-media-container .element-data INPUT{
+    float: right;
+}
+
+.element-media-container .element-media {
+    width: 300px;
+    height: 200px;
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    line-height: 180px;
+    vertical-align: top;
+    display: inline-block;
+}
+.element-media-container .element-media center:before {
+    content: ' ';
+    display: inline-block;
+    vertical-align: middle;
+    height: 100%;
+}
+
+.element-media-container .element-media IMG {
+    max-width: 250px;
+    max-height: 150px;
+    margin: 0 auto;
+    vertical-align: middle;
+}
+
+
+#modalDependenciesContainer .dependencySelectionContainer {
+    width: 100px;
+    height: 40px;
+    line-height: 40px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    cursor: pointer;
+    display: inline-block;
+}
+#modalDependenciesContainer .dependencySelectionContainer:hover {
+    background: #ccc;
+}
+
+.element-media-container.defaultMediaData {
+    display: none;
+}
+.containerXtraMetaDatas {
+    height: 50px;
+}
+.containerXtraMetaDatas INPUT, .containerXtraMetaDatas TEXTAREA {
+    float: right;
+}
+
+/*.CodeMirror  {
+    height: auto;
+    max-height: 300px;
+}*/
+
+#listSiteMetadatas p, #listPageMetadatas p{
+    display: inline-block;
+    border: 1px solid #ddd;
+    padding: 5px;
+    margin: 5px;
+}
+
+#mediaContainer {
+    
+    overflow: auto;
+    height: 300px;
+}

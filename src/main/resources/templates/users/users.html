@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+</head>
+<body>
+<div class="container-full">
+	<div class="row">
+	    <div class="col-sm-2">
+	         <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+	    </div>
+            <div class="col-sm-10">
+                <span sec:authorize="hasAuthority('SUPERADMIN')" class="new"><a href="#" th:href="@{'/users/registration'}" th:text="#{global.new}"></a></span>
+                <div th:if="${not #lists.isEmpty(users)}">
+                    <h2 th:text="#{users.user_list}"></h2>
+
+                    <table class="table table-striped">
+                        <tr>
+                            <th><p th:text="#{global.id}"></p></th>
+                            <th><p th:text="#{users.name}"></p></th>
+                            <th><p th:text="#{users.roles}"></p></th>
+                            <th><p th:text="#{global.edit}">Edit</p></th>
+                            <th><p th:text="#{global.delete}">Delete</p></th>
+                        </tr>
+                        <tr th:each="user : ${users}">
+                            <td th:text="${user.id}">Id</td>
+                            <td th:text="${user.username}">Name</td>
+                            <td><span th:each="rol : ${user.roles}" th:text="${rol.role + ','}"></span></td>
+                            <td><a th:href="@{/user/edit/{id}(id=${user.id})}" th:text="#{global.edit}">Edit</a></td>
+                            <td><a th:href="@{/user/delete/{id}(id=${user.id})}" th:text="#{global.delete}">Delete</a></td>
+                        </tr>
+                    </table>
+
+                </div>
+            </div>
+    </div>
+</div>
+
+</body>
+</html>

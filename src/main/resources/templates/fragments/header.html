@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+<!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+</head>
+<body>
+<div class="container">
+    <div th:fragment="header">
+        
+	    <div>
+	    	<div class="user-details">
+	    		<span sec:authorize="isAuthenticated()">
+	    			<span th:text="#{global.welcome_message(${#authentication.principal.username})}"></span>
+	    			<a th:href="@{/logout}" href="/logout" th:text="#{global.logout}">Logout</a>
+	    		</span>
+	    		<span sec:authorize="!isAuthenticated()">
+	    			<span th:text="#{global.welcome_guest}"></span>
+	    			<a th:href="@{/login}" href="/login" th:text="#{global.login}">Login</a>
+	    		</span>
+	    	</div>
+		<div class="sidebar-nav">
+		    	<nav class="navbar navbar-default">
+		        	<div class="container-fluid">
+		            	<div class="navbar-header">
+		                	<div>
+                                            <a class="navbar-brandnobootstrap" href="#" th:href="@{/}"><p th:text="#{global.name}"></p></a>
+		                	</div>
+			                <ul class="nav navbar-navnobootstrap" sec:authorize="isAuthenticated()">
+			                    <li><a sec:authorize="hasAuthority('SUPERADMIN')" href="#" th:href="@{/sites}"><p th:text="#{menu.sites}"></p></a></li>
+			                    <li><a sec:authorize="hasAuthority('SITE_ADMIN')" href="#" th:href="@{/site/edit/{id}(id=${#authentication.principal.site?.id})}"><p th:text="#{menu.your_site}"></p></a></li>
+			                     
+			                    <li><a sec:authorize="hasAnyAuthority('SUPERADMIN', 'SITE_ADMIN')" href="#" th:href="@{/pages}"><p th:text="#{menu.pages}"></p></a></li>
+			                    <li><a sec:authorize="hasAuthority('SUPERADMIN')" href="#" th:href="@{/elements}"><p th:text="#{menu.elements}"></p></a></li>
+			                    <li><a sec:authorize="hasAnyAuthority('SUPERADMIN', 'SITE_ADMIN', 'MEDIA_ADMIN')" href="#" th:href="@{/medias}"><p th:text="#{menu.media}"></p></a></li>
+		                	    <!--<li><a sec:authorize="hasAnyAuthority('SUPERADMIN', 'SITE_ADMIN', 'REPORT_ADMIN')" href="#" th:href="@{/reports}"><p th:text="#{menu.reports}"></p></a></li>-->
+                                            <li><a sec:authorize="hasAnyAuthority('SUPERADMIN', 'SITE_ADMIN', 'REPORT_ADMIN')" href="#" th:href="@{/messaging}"><p th:text="#{menu.messaging}"></p></a></li>
+                                            <li><a sec:authorize="hasAuthority('SUPERADMIN')" href="#" th:href="@{/users}"><p th:text="#{menu.users}"></p></a></li>
+			                </ul>
+		            	</div>
+		        	</div>
+		    	</nav>
+		    </div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

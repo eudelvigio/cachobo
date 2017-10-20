@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+    <script th:src="@{/js/revisions.js}" src="/static/js/revisions.js"></script>
+    <script th:inline='javascript'>
+/*<![CDATA[*/
+    window.revisionsMedia = /*[[${revisionsMedia}]]*/[];
+    window.publishedMedia = /*[[${publishedMedias}]]*/[];
+    window.allMedia = /*[[${medias}]]*/[];
+/*]]>*/    
+    </script>
+</head>
+    <body>
+    <div class="container-full">
+        <div class="row">
+            <div class="col-sm-2">
+                 <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+            </div>
+            <div class="col-sm-10">
+                <input type="hidden" id="siteId" th:value="${site.id}" />
+                <h2 th:text="${site.name}"></h2>
+                
+                <h3>Sitio</h3>
+                <div id="rev-container" style="border: 1px solid #ccc; height: 50px; padding: 10px;">
+                    <label for="selectRevisions">Revisiones</label>
+                    <select id="selectRevisions">
+                        <option th:each="rev : ${revisions}" th:text="${rev}"  th:value="${rev}" ></option>
+                        <!--<option selected='selected' value="-1" >Actual</option>-->
+                    </select>
+                    <input type="button" value="Abrir revisión en ventana nueva" onclick="showSelectedRevision()" />
+                    <input type="button" value="Publicar revisión" onclick="setRevisionAsPublished()" />
+                </div>
+                <div id="published-site">
+                    <div id="not_published_site_yet" th:if="${ps==null}">No hay ninguna revisión del sitio publicada.</div>
+                    <div id="published_site" th:if="${ps!=null}">
+                        Revisión <span th:text="${ps.revisionNumber}"></span>
+                        <input type="button" value="Mostrar publicado" onclick="showPublished()"/>
+                        <input type="button" value="Descargar publicado" onclick="downloadPublished()"/>
+                    </div>
+                </div>
+                <h3>Medias</h3>
+                <div id='rev-media-container' style='max-height: 500px; overflow: auto;'>
+                    <div th:id='${m.name}' th:each='m : ${medias}' th:text='${m.name}'></div>
+                    
+                    
+                    
+                </div>
+                
+                
+                
+                <input type='button' value='Compilar datos' onclick='compilaDatos()' />
+            </div>
+        </div>
+    </div>
+</body>
+</html>
